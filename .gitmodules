@@ -1,0 +1,9 @@
+[submodule "server-src"]
+	path = server-src
+	url = https://github.com/d1str4ught/m2dev-server-src
+[submodule "client-src"]
+	path = client-src
+	url = https://github.com/d1str4ught/m2dev-client-src
+[submodule "client-bin"]
+	path = client-bin
+	url = https://github.com/d1str4ught/m2dev-client
