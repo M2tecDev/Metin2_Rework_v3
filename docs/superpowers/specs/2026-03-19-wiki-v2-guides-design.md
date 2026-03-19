@@ -23,65 +23,111 @@ The project is Metin2 Rework v3: vanilla Metin2 source base with modernized buil
 
 ---
 
+## Output Location
+
+All new and modified wiki pages are written to:
+`wiki/` directory in the main repository (branch `claude/wiki-v2-guides`).
+
+After all agents complete, Phase 4 commits the changes and pushes to the GitHub Wiki git repository (`<repo>.wiki.git`) via the `wiki-repo/` directory.
+
+---
+
 ## Deliverables
 
 ### 12 New `guide-` Pages
 
-| File | Topic | Source |
-|------|-------|--------|
-| `guide-Build-Environment.md` | VS version, CMake, dependencies (Boost, CryptoPP, Python, DevIL) | CMakeLists.txt, vcpkg/conan files |
-| `guide-Best-Practices.md` | Coding standards, feature toggles, Service.h pattern | Derived from source; omit if not derivable |
-| `guide-Asset-Pipeline.md` | VFS/Pack system, .dds/.gr2/.tga placement, .mse effects, .sub files | EterPack, PackLib, EffectLib wiki |
-| `guide-Localization.md` | locale_game.txt, locale_interface.txt, server-side strings, adding new language | EterLocale wiki, client-bin locale files |
-| `guide-Debugging.md` | syserr table, sys_log usage, gdb/crash dump guide, debug modes | libthecore, sys_log call sites |
-| `guide-Database-Proto.md` | item_proto/mob_proto workflow, vnum ranges, client↔server proto sync | server-src-db wiki, server-src-common wiki |
-| `guide-Economy.md` | Refine-system (vnum↔refine_set), cube.txt recipes, custom-currency shops | topic-Item-System wiki, server-src-game wiki |
-| `guide-Horse-Mount-Pet.md` | Horse tiers, mount vnum logic (ITEM_COSTUME_MOUNT), CPetSystem | topic-Character-System wiki, GameLib-Characters wiki |
-| `guide-Skill-Buff-System.md` | skill_proto, skill_desc.txt, skill_table.txt, AddAffect, cooldowns/mana | topic-Character-System, topic-Combat-System wiki |
-| `guide-Adding-a-New-System.md` | End-to-end walkthrough: Python UI → C++ packet → server handler → DB | All guide-* pages as input |
-| `guide-NPC-and-Spawning.md` | mob_proto, regen.txt, SpawnGroups, NPC shop setup | server-src-game wiki, topic-Map-World-System wiki |
-| `guide-Security-AntiCheat.md` | Speed-hack detection, packet validation, ownership checks | topic-Game-Client-Protocol wiki, libthecore wiki |
+| File | Topic | Primary Source Files |
+|------|-------|---------------------|
+| `guide-Build-Environment.md` | VS version, CMake setup, dependencies (Boost, CryptoPP, Python, DevIL) | `CMakeLists.txt`, `vcpkg.json`/`conanfile.txt`, compiler flag files |
+| `guide-Best-Practices.md` | Coding standards derived from observed patterns, `#ifdef` feature toggles | `UserInterface/PythonNetworkStream.h`, `game/char.h`, `UserInterface/GameType.h`, `Locale_inc.h` — derive conventions from code style; omit any claim that cannot be confirmed |
+| `guide-Asset-Pipeline.md` | VFS/Pack system, .dds/.gr2/.tga placement, .mse effects, .sub files | `client-src-PackLib.md`, `client-src-EffectLib.md`, `client-src-EterGrnLib.md` wiki pages |
+| `guide-Localization.md` | `locale_game.txt`, `locale_interface.txt`, server-side strings, adding a new language | `client-src-EterLocale.md` wiki, `client-bin/assets/root/locale_*.py` files |
+| `guide-Debugging.md` | syserr error table, `sys_log` / `fprintf` usage, gdb/crash-dump guide, client debug console | `server-src-libthecore.md` wiki, `sys_log` call sites in game source |
+| `guide-Database-Proto.md` | `item_proto`/`mob_proto` workflow (server SQL ↔ client binary), vnum range recommendations | `server-src-db.md`, `server-src-common.md` wiki pages |
+| `guide-Economy.md` | Refine-system (`vnum` ↔ `refine_set`), `cube.txt` recipe format, custom-currency NPC shops | `topic-Item-System.md`, `server-src-game.md` wiki pages |
+| `guide-Horse-Mount-Pet.md` | Horse tier progression, mount vnum logic (`ITEM_COSTUME_MOUNT`), `CPetSystem` | `topic-Character-System.md`, `client-src-GameLib-Characters.md` wiki pages |
+| `guide-Skill-Buff-System.md` | `skill_proto`, `skill_desc.txt`, `skill_table.txt`, `AddAffect`, cooldowns/mana costs | `topic-Character-System.md`, `topic-Combat-System.md` wiki pages |
+| `guide-NPC-and-Spawning.md` | `mob_proto`, `regen.txt`, SpawnGroups, NPC shop setup | `server-src-game.md`, `topic-Map-World-System.md` wiki pages |
+| `guide-Adding-a-New-System.md` | End-to-end walkthrough: Python UI → C++ packet → server handler → DB | All Phase 1 guide-* pages + `guide-Best-Practices.md` (must run after those) |
+| `guide-Security-AntiCheat.md` | Speed-hack detection, packet validation, ownership checks | `topic-Game-Client-Protocol.md`, `server-src-libthecore.md` wiki pages |
 
-### 7 Extended Topic Pages
+### 6 Extended Topic Pages
 
-| File | New Sections Added |
-|------|--------------------|
-| `topic-UI-Python-System.md` | Boilerplate empty window, all `ui.py` base classes with use-cases, `onPressKeyDict` event binding |
-| `topic-Game-Client-Protocol.md` | Step-by-step "How to Add a New Packet" (both sides), Rework-specific CMake build integration |
-| `topic-Quest-System.md` | Dungeon library deep dive (`d.*` API), `server_timer` vs `timer` comparison, adding a new C++ trigger |
-| `topic-Map-World-System.md` | Full client+server map file checklist, npc_list/atlas registration, coordinate ×100 factor explained |
-| `topic-Item-System.md` | `UseItem()` annotated walkthrough, `char_item.cpp` structure, durability and stack size settings |
-| `topic-Combat-System.md` | `APPLY_*` vs `POINT_*` distinction, damage formula with LaTeX, hardcap locations in source |
-| `topic-Character-System.md` | How to add a new synced variable (CLIENT + SERVER steps), broadcast update mechanism |
+> Note: `topic-UI-Python-System.md` is excluded — the v1 agent already implemented the boilerplate window (Section 7), all base-class documentation (Section 3.2), and `onPressKeyDict` event binding. No genuine content gap exists.
+
+| File | New Sections to Add |
+|------|---------------------|
+| `topic-Game-Client-Protocol.md` | **"How to Add a New Packet" step-by-step**: adding header constant in `packet_headers.h`, registering handler in `RegisterRecvPhase*`, CMake rebuild steps, client `RecvXxx`/`SendXxx` pattern. Must cross-reference existing Sections 2 and 7 rather than repeat wire-format or dispatch content already there. |
+| `topic-Quest-System.md` | **Dungeon API deep dive**: expand existing 7-entry `d.*` table into full `d.*`/`dungeon.*` section with usage patterns and worked examples. **Timer decision table**: `server_timer` vs `timer` — add worked example (boss respawn = `server_timer`, player cooldown = `timer`) and decision table (per-character vs server-global vs dungeon-scoped). **Adding a new C++ trigger**: step-by-step guide to registering a new `when` event in C++. |
+| `topic-Map-World-System.md` | **Full map file checklist**: client files (`property/`, `textureset/`, map name string) vs server files (`Setting.txt`, `Town.txt`, `regen.txt`) in a side-by-side table. **npc_list & Atlas registration**: how a new map appears on the minimap (M key). **Coordinate ×100 factor**: explicit explanation with example (server coord 100 = client unit 1). |
+| `topic-Item-System.md` | **`UseItem()` annotated walkthrough**: `char_item.cpp::UseItem(TItemPos Cell)` — the switch/case flow, how each `ITEM_USE` subtype branches. **Durability and stack size**: where in `item_length.h` and `TItemTable` these are controlled. |
+| `topic-Combat-System.md` | **`APPLY_*` vs `POINT_*` distinction**: conceptual explanation that `EApplyTypes` values are item/buff-facing identifiers and `EPoints` values are the character's live stat array indices; the server maps `APPLY_*` onto `POINT_*` at effect-application time (reference `affect.cpp` and `char_point.cpp`). **Damage formula**: expressed as a fenced code block (not LaTeX — GitHub Wiki rendering is unverified); annotate with variable sources. **Hardcap locations**: where in source the percentage caps are defined. |
+| `topic-Character-System.md` | **Adding a new synced variable**: step-by-step for CLIENT side (`CInstanceBase` + Python getter) and SERVER side (`CHARACTER` member + `POINT_*` enum or custom field) + the packet that synchronizes it. **Broadcast update mechanism**: how nearby-player updates are triggered (SECTREE view range, `UpdatePacket` / `ViewList` flow). |
 
 ### Navigation Updates
 
-- `_Sidebar.md`: new `## Developer Guides` section listing all 12 guide pages
-- `Home.md`: add "Developer Guides" section with brief description
+- `_Sidebar.md`: add `## Developer Guides` section listing all 12 guide pages alphabetically
+- `Home.md`: add "Developer Guides" section with one-line description of each guide
+- Missing v1 topic pages (`topic-Guild-System`, `topic-Character-Creation`, `topic-Asset-Packing`, `topic-Python-CPP-Bridge`) are out of scope for v2 and deferred to a future wave.
 
 ---
 
 ## Generation Strategy
 
-### Phase 1 — Parallel (9 independent agents)
-Agents A–I write the first 9 guide pages concurrently. Each agent reads relevant existing wiki pages as primary source, falls back to direct source file reads where needed.
+### Phase 1 — Parallel (10 independent agents)
 
-### Phase 2 — Sequential (3 agents, depend on Phase 1)
-- `guide-Best-Practices.md` — reads Phase 1 output + source code directly
-- `guide-Adding-a-New-System.md` — synthesizes all Phase 1 guides into end-to-end walkthrough
-- `guide-NPC-and-Spawning.md` — reads server-src-game wiki + map wiki
+Agents A–J write the first 10 guide pages concurrently. Each agent reads relevant existing wiki pages as primary source, falls back to direct source file reads where needed.
 
-### Phase 3 — Parallel (7 agents)
-Agents extend the 7 existing topic pages. Each agent reads the current page content first, then appends new sections.
+```
+Agent A → guide-Build-Environment.md
+Agent B → guide-Asset-Pipeline.md
+Agent C → guide-Localization.md
+Agent D → guide-Debugging.md
+Agent E → guide-Database-Proto.md
+Agent F → guide-Economy.md
+Agent G → guide-Horse-Mount-Pet.md
+Agent H → guide-Skill-Buff-System.md
+Agent I → guide-Security-AntiCheat.md
+Agent J → guide-NPC-and-Spawning.md
+```
+
+### Phase 2 — Sequential (2 agents, strict order)
+
+Run in this exact order:
+
+1. **Agent K** → `guide-Best-Practices.md`
+   - Reads Phase 1 outputs + source files directly
+   - Derives conventions from observed code patterns; omits anything not confirmable
+
+2. **Agent L** → `guide-Adding-a-New-System.md`
+   - Reads ALL Phase 1 guide outputs + `guide-Best-Practices.md` from Agent K
+   - Synthesizes into end-to-end "add a complete system" walkthrough
+
+### Phase 3 — Parallel (6 agents)
+
+Agents extend 6 existing topic pages. Each agent:
+1. Reads the current full page content first
+2. For pages **with** a Table of Contents: inserts new sections in the numbered sequence and updates the ToC
+3. For pages **without** a ToC: appends new sections before the existing "Key Files" section
+
+```
+Agent M → topic-Game-Client-Protocol.md
+Agent N → topic-Quest-System.md
+Agent O → topic-Map-World-System.md
+Agent P → topic-Item-System.md
+Agent Q → topic-Combat-System.md
+Agent R → topic-Character-System.md
+```
 
 ### Phase 4 — Sequential
-Update `Home.md` and `_Sidebar.md`, commit all changes, push to GitHub wiki repo.
+
+Update `Home.md` and `_Sidebar.md`, then commit all changes to `wiki/`, then copy to `wiki-repo/` and push to GitHub Wiki.
 
 ---
 
 ## Content Standards
 
-All guide pages follow this template:
+All new guide pages follow this template:
 
 ```markdown
 # Guide: <Title>
@@ -105,14 +151,15 @@ Table: file path | repo | role
 ```
 
 - Code snippets: use fenced blocks with language identifier (`cpp`, `python`, `lua`, `sql`)
-- Math formulas: use GitHub-compatible LaTeX (`$$formula$$`)
+- **No LaTeX** (`$$...$$`): GitHub Wiki rendering is unverified. Express formulas as annotated fenced code blocks instead.
 - Cross-links: always link to the relevant reference page (e.g. `[topic-Combat-System](topic-Combat-System)`)
-- "Best guess" content: if a specific Rework-v3 detail cannot be confirmed from source, mark with `> **Note:** Derived from vanilla Metin2 source — verify against your local Rework v3 files.`
+- Unverifiable Rework-v3-specific details: mark with `> **Note:** Derived from vanilla Metin2 source — verify against your local Rework v3 files.`
 
 ---
 
 ## Out of Scope
 
 - Generating new source code (guides explain existing code, not add new features)
-- Documenting systems that don't exist in this codebase (e.g. if no Pet system exists, omit CPetSystem)
-- Translating existing pages to German (wiki stays English per earlier decision)
+- Documenting systems that don't exist in this codebase (omit if source evidence is absent)
+- Translating existing pages to German (wiki stays English)
+- Missing v1 topic pages (Guild System, Character Creation, Asset Packing, Python-CPP Bridge) — deferred to v3
