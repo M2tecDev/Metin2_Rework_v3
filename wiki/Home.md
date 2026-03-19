@@ -32,16 +32,16 @@ Deep-dive reference pages with 5-section structure: Full-Stack Architecture → 
 ## Interactive Calculators (GitHub Pages)
 
 Browser-based tools derived directly from the server source code.
-➜ **[Open Calculator Hub](https://YourOrg.github.io/Metin2_Rework_v3/)**
+➜ **[Open Calculator Hub](https://m2tecdev.github.io/Metin2_Rework_v3/)**
 
 | Calculator | Formula source |
 |------------|---------------|
-| [Damage Calculator](https://YourOrg.github.io/Metin2_Rework_v3/calculators/damage.html) | `battle.cpp : CalcMeleeDamage()` |
-| [Upgrade Probability](https://YourOrg.github.io/Metin2_Rework_v3/calculators/upgrade.html) | `refine.cpp : CRefineManager::Refine()` |
-| [Dragon Soul Refine](https://YourOrg.github.io/Metin2_Rework_v3/calculators/dragon-soul.html) | `dragon_soul_refine_settings.py` |
-| [Horse Feed Planner](https://YourOrg.github.io/Metin2_Rework_v3/calculators/horse-level.html) | `char_horse.cpp : HORSE_LEVEL_UP_NEED_STAMINA` |
-| [Drop Chance](https://YourOrg.github.io/Metin2_Rework_v3/calculators/drop-chance.html) | `item_manager.cpp : CreateDropItem()` |
-| [Item Flag Decoder](https://YourOrg.github.io/Metin2_Rework_v3/calculators/flags.html) | `length.h` — ANTI/WEAR/RACE/MOB flags |
+| [Damage Calculator](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/damage.html) | `battle.cpp : CalcMeleeDamage()` |
+| [Upgrade Probability](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/upgrade.html) | `refine.cpp : CRefineManager::Refine()` |
+| [Dragon Soul Refine](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/dragon-soul.html) | `dragon_soul_refine_settings.py` |
+| [Horse Feed Planner](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/horse-level.html) | `char_horse.cpp : HORSE_LEVEL_UP_NEED_STAMINA` |
+| [Drop Chance](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/drop-chance.html) | `item_manager.cpp : CreateDropItem()` |
+| [Item Flag Decoder](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/flags.html) | `length.h` — ANTI/WEAR/RACE/MOB flags |
 
 ---
 
