@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metin2 Rework v3 — Developer Calculators</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .section-title {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-muted);
+      margin: 2.5rem 0 .8rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .wiki-link-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .wiki-link-row a {
+      color: var(--info);
+      font-size: .85rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+    }
+    .wiki-link-row a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    Metin2 Rework v3
+  </a>
+  <nav>
+    <a href="https://github.com/YourOrg/Metin2_Rework_v3/wiki" target="_blank">Wiki</a>
+    <a href="https://github.com/YourOrg/Metin2_Rework_v3" target="_blank">GitHub</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>Developer Calculators</h1>
+    <p>Interactive tools derived directly from the Metin2 Rework v3 source code.<br>
+       All formulas reference exact file paths for auditability.</p>
+  </div>
+
+  <div class="section-title">Combat &amp; Economy</div>
+  <div class="card-grid">
+    <a href="calculators/damage.html" class="calc-card">
+      <span class="icon">⚔️</span>
+      <h3>Damage Calculator</h3>
+      <p>ATT_GRADE vs DEF_GRADE, level diff, crit/penetrate — melee DPS model from <code>battle.cpp</code></p>
+    </a>
+    <a href="calculators/upgrade.html" class="calc-card">
+      <span class="icon">🔨</span>
+      <h3>Upgrade Probability</h3>
+      <p>Expected attempts &amp; cumulative success chance to reach +0 → +9 from <code>CRefineManager</code></p>
+    </a>
+    <a href="calculators/drop-chance.html" class="calc-card">
+      <span class="icon">🎲</span>
+      <h3>Drop Chance</h3>
+      <p>Base rate, mob rank multiplier, level-diff penalty — from <code>item_manager.cpp</code></p>
+    </a>
+  </div>
+
+  <div class="section-title">Progression</div>
+  <div class="card-grid">
+    <a href="calculators/dragon-soul.html" class="calc-card">
+      <span class="icon">🐉</span>
+      <h3>Dragon Soul Refine</h3>
+      <p>Type / grade / step / strength — refine probabilities &amp; stat multiplier</p>
+    </a>
+    <a href="calculators/horse-level.html" class="calc-card">
+      <span class="icon">🐴</span>
+      <h3>Horse Feed Planner</h3>
+      <p>Total feed items needed to level horse from current → target level (<code>char_horse.cpp</code>)</p>
+    </a>
+  </div>
+
+  <div class="section-title">Item Flags</div>
+  <div class="card-grid">
+    <a href="calculators/flags.html" class="calc-card">
+      <span class="icon">🏷️</span>
+      <h3>Item Flag Decoder</h3>
+      <p>ANTI_FLAG / WEAR_FLAG / RACE_FLAG / MOB_FLAG bitmask encoder &amp; decoder (<code>length.h</code>)</p>
+    </a>
+  </div>
+
+  <div class="wiki-link-row">
+    <a href="https://github.com/YourOrg/Metin2_Rework_v3/wiki" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      Browse the full Developer Wiki
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
