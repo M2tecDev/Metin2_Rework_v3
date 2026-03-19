@@ -10,11 +10,11 @@ UserInterface is the final assembly point: it produces the `Metin2.exe` binary. 
 
 | Sub-page | Covers |
 |----------|--------|
-| [UserInterface — NetworkStream](client-src-UserInterface-NetworkStream.md) | `CPythonNetworkStream`: packet send/receive, protocol dispatch |
-| [UserInterface — PhaseLogin](client-src-UserInterface-PhaseLogin.md) | Login phase: server connection, account auth, character slot display |
-| [UserInterface — PhaseSelect](client-src-UserInterface-PhaseSelect.md) | Character selection phase |
-| [UserInterface — PhaseGame](client-src-UserInterface-PhaseGame.md) | Gameplay phase: actor sync, item/skill/chat/party/guild packets |
-| [UserInterface — Connector](client-src-UserInterface-Connector.md) | `AccountConnector`, `ServerStateChecker`, guild mark upload/download |
+| [UserInterface — NetworkStream](client-src-UserInterface-NetworkStream) | `CPythonNetworkStream`: packet send/receive, protocol dispatch |
+| [UserInterface — PhaseLogin](client-src-UserInterface-PhaseLogin) | Login phase: server connection, account auth, character slot display |
+| [UserInterface — PhaseSelect](client-src-UserInterface-PhaseSelect) | Character selection phase |
+| [UserInterface — PhaseGame](client-src-UserInterface-PhaseGame) | Gameplay phase: actor sync, item/skill/chat/party/guild packets |
+| [UserInterface — Connector](client-src-UserInterface-Connector) | `AccountConnector`, `ServerStateChecker`, guild mark upload/download |
 
 ## Dependencies
 

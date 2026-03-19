@@ -2,7 +2,7 @@
 
 > `CPythonNetworkStream`: the central TCP protocol hub managing all packet send/receive operations and phase-driven dispatch for the Metin2 client.
 
-[← Back to UserInterface index](client-src-UserInterface.md)
+[← Back to UserInterface index](client-src-UserInterface)
 
 ## Overview
 

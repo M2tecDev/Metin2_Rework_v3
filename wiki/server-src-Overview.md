@@ -107,12 +107,12 @@ Binaries are placed in `build/bin/`. Libraries in `build/lib/`.
 
 | Page | Module |
 |------|--------|
-| [server-src-game](server-src-game.md) | game process |
-| [server-src-db](server-src-db.md) | db process |
-| [server-src-qc](server-src-qc.md) | quest compiler tool |
-| [server-src-libthecore](server-src-libthecore.md) | networking / event loop |
-| [server-src-libpoly](server-src-libpoly.md) | formula evaluator |
-| [server-src-libgame](server-src-libgame.md) | shared game utilities |
-| [server-src-liblua](server-src-liblua.md) | embedded Lua 5.0.3 |
-| [server-src-libsql](server-src-libsql.md) | async SQL abstraction |
-| [server-src-common](server-src-common.md) | shared headers |
+| [server-src-game](server-src-game) | game process |
+| [server-src-db](server-src-db) | db process |
+| [server-src-qc](server-src-qc) | quest compiler tool |
+| [server-src-libthecore](server-src-libthecore) | networking / event loop |
+| [server-src-libpoly](server-src-libpoly) | formula evaluator |
+| [server-src-libgame](server-src-libgame) | shared game utilities |
+| [server-src-liblua](server-src-liblua) | embedded Lua 5.0.3 |
+| [server-src-libsql](server-src-libsql) | async SQL abstraction |
+| [server-src-common](server-src-common) | shared headers |
