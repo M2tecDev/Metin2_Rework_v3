@@ -702,9 +702,9 @@ Server:      CInputMain receives CG_SCRIPT_ANSWER
 
 ## See Also
 
-- [server-src-qc](server-src-qc.md) — Detailed quest compiler internals
-- [server-src-game](server-src-game.md) — `CQuestManager` and `CHARACTER` quest interface within the game subsystem
-- [server-src-liblua](server-src-liblua.md) — Lua 5.0.3 interpreter internals
-- [client-src-UserInterface](client-src-UserInterface.md) — Full network stream and Python module reference
-- [client-src-PythonModules](client-src-PythonModules.md) — Python module registration overview
-- [client-bin-root-ui-core](client-bin-root-ui-core.md) — `uiquest.py` and `uicharacter.py` documentation
+- [server-src-qc](server-src-qc) — Detailed quest compiler internals
+- [server-src-game](server-src-game) — `CQuestManager` and `CHARACTER` quest interface within the game subsystem
+- [server-src-liblua](server-src-liblua) — Lua 5.0.3 interpreter internals
+- [client-src-UserInterface](client-src-UserInterface) — Full network stream and Python module reference
+- [client-src-PythonModules](client-src-PythonModules) — Python module registration overview
+- [client-bin-root-ui-core](client-bin-root-ui-core) — `uiquest.py` and `uicharacter.py` documentation

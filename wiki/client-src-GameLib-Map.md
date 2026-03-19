@@ -2,7 +2,7 @@
 
 > Outdoor map rendering and management: terrain chunk loading, area system, environment data, sky, water, snow, and the overall map manager.
 
-[← Back to GameLib index](client-src-GameLib.md)
+[← Back to GameLib index](client-src-GameLib)
 
 ## Overview
 

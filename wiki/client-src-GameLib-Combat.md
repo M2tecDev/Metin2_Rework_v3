@@ -2,7 +2,7 @@
 
 > Projectile system: flying object data definitions, trajectory tracking, targeting, and the manager that drives all in-flight instances.
 
-[← Back to GameLib index](client-src-GameLib.md)
+[← Back to GameLib index](client-src-GameLib)
 
 ## Overview
 

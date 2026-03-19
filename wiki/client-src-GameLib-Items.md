@@ -2,7 +2,7 @@
 
 > Item data definitions and management: item proto table loading, graphic resources, wear positions, apply types, and item flags.
 
-[← Back to GameLib index](client-src-GameLib.md)
+[← Back to GameLib index](client-src-GameLib)
 
 ## Overview
 

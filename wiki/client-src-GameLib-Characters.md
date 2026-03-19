@@ -2,7 +2,7 @@
 
 > Character actor simulation: movement, skeletal animation, combat motions, race data, and physics.
 
-[← Back to GameLib index](client-src-GameLib.md)
+[← Back to GameLib index](client-src-GameLib)
 
 ## Overview
 

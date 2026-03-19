@@ -23,7 +23,7 @@ The `M_*.c` files (200+) are machine-generated frozen bytecode modules for the c
 
 ### Game Extension Module: GameLib–Skills
 
-The `CMakeLists.txt` reveals that PythonModules is primarily a compilation unit that packages the frozen modules. The actual game C extension modules (for skill data, character data, etc.) reside in `UserInterface/` and are described in the [UserInterface](client-src-UserInterface.md) documentation.
+The `CMakeLists.txt` reveals that PythonModules is primarily a compilation unit that packages the frozen modules. The actual game C extension modules (for skill data, character data, etc.) reside in `UserInterface/` and are described in the [UserInterface](client-src-UserInterface) documentation.
 
 ## Notes on Architecture
 

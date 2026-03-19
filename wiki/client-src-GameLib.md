@@ -10,10 +10,10 @@ GameLib is the central game-logic library that sits between the rendering engine
 
 | Sub-page | Covers |
 |----------|--------|
-| [GameLib — Characters](client-src-GameLib-Characters.md) | `CActorInstance`, `CRaceData`, `CRaceManager`, `CRaceMotionData`, `WeaponTrace`, physics |
-| [GameLib — Combat & Flying](client-src-GameLib-Combat.md) | `CFlyingManager`, `CFlyingInstance`, `CFlyingData`, `CFlyTarget`, `FlyTrace`, `FlyHandler` |
-| [GameLib — Items](client-src-GameLib-Items.md) | `CItemData`, `CItemManager`, item types, apply types, wear positions |
-| [GameLib — Map & World](client-src-GameLib-Map.md) | `CMapManager`, `CMapOutdoor`, `CArea`, `CMapBase`, environment, terrain, snow, decals |
+| [GameLib — Characters](client-src-GameLib-Characters) | `CActorInstance`, `CRaceData`, `CRaceManager`, `CRaceMotionData`, `WeaponTrace`, physics |
+| [GameLib — Combat & Flying](client-src-GameLib-Combat) | `CFlyingManager`, `CFlyingInstance`, `CFlyingData`, `CFlyTarget`, `FlyTrace`, `FlyHandler` |
+| [GameLib — Items](client-src-GameLib-Items) | `CItemData`, `CItemManager`, item types, apply types, wear positions |
+| [GameLib — Map & World](client-src-GameLib-Map) | `CMapManager`, `CMapOutdoor`, `CArea`, `CMapBase`, environment, terrain, snow, decals |
 
 ## Dependencies
 

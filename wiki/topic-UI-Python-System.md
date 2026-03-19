@@ -642,12 +642,12 @@ python pack.py root
 
 ## Related Pages
 
-- [EterPythonLib](client-src-EterPythonLib.md) — full C++ widget class reference
-- [ScriptLib](client-src-ScriptLib.md) — CPython launcher and debug module
-- [PythonModules](client-src-PythonModules.md) — C extension module registration list
-- [UserInterface](client-src-UserInterface.md) — `CPythonApplication`, `CPythonNetworkStream`
-- [UserInterface — NetworkStream](client-src-UserInterface-NetworkStream.md) — packet send/receive detail
-- [client-bin root — Framework](client-bin-root-framework.md) — `ui.py`, `game.py`, `interfacemodule.py`
-- [client-bin root — Network](client-bin-root-network.md) — `networkmodule.py`, `serverinfo.py`
-- [client-bin UIScript](client-bin-uiscript.md) — all 80 UIScript layout files documented
-- [topic-Login-Flow](topic-Login-Flow.md) — end-to-end login packet trace
+- [EterPythonLib](client-src-EterPythonLib) — full C++ widget class reference
+- [ScriptLib](client-src-ScriptLib) — CPython launcher and debug module
+- [PythonModules](client-src-PythonModules) — C extension module registration list
+- [UserInterface](client-src-UserInterface) — `CPythonApplication`, `CPythonNetworkStream`
+- [UserInterface — NetworkStream](client-src-UserInterface-NetworkStream) — packet send/receive detail
+- [client-bin root — Framework](client-bin-root-framework) — `ui.py`, `game.py`, `interfacemodule.py`
+- [client-bin root — Network](client-bin-root-network) — `networkmodule.py`, `serverinfo.py`
+- [client-bin UIScript](client-bin-uiscript) — all 80 UIScript layout files documented
+- [topic-Login-Flow](topic-Login-Flow) — end-to-end login packet trace
