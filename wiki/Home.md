@@ -12,6 +12,60 @@ Welcome to the complete technical reference for **Metin2 Rework v3**. This wiki 
 
 ---
 
+## Blueprints (Full-Stack Architecture)
+
+Deep-dive reference pages with 5-section structure: Full-Stack Architecture → Causal Chain → Dependency Matrix → Extension How-To → Debug Anchors.
+
+| Blueprint | What it covers |
+|-----------|---------------|
+| [Protocol Blueprint](blueprint-Game-Client-Protocol) | All CG/GC/GD/DG/GG packet tables, dispatcher architecture, framing |
+| [Login Flow Blueprint](blueprint-Login-Flow) | Phase state machine, EPhases transitions, all login/select packets |
+| [Character System Blueprint](blueprint-Character-System) | 73 point types, job system, party/guild, lifecycle hooks |
+| [Item System Blueprint](blueprint-Item-System) | Item creation, inventory grid, attribute/socket/refine pipeline |
+| [Combat System Blueprint](blueprint-Combat-System) | CalcMeleeDamage, hit/crit/penetrate, affect system, PvP modes |
+| [Quest System Blueprint](blueprint-Quest-System) | Lua DSL grammar, qc compiler FSM, full 90-function Lua API |
+| [UI Python Blueprint](blueprint-UI-Python-System) | CPython bridge, module table, widget hierarchy, execution model |
+| [Map & World Blueprint](blueprint-Map-World-System) | SECTREE spatial system, dungeon instancing, warp/portal flow |
+
+---
+
+## Interactive Calculators (GitHub Pages)
+
+Browser-based tools derived directly from the server source code.
+➜ **[Open Calculator Hub](https://YourOrg.github.io/Metin2_Rework_v3/)**
+
+| Calculator | Formula source |
+|------------|---------------|
+| [Damage Calculator](https://YourOrg.github.io/Metin2_Rework_v3/calculators/damage.html) | `battle.cpp : CalcMeleeDamage()` |
+| [Upgrade Probability](https://YourOrg.github.io/Metin2_Rework_v3/calculators/upgrade.html) | `refine.cpp : CRefineManager::Refine()` |
+| [Dragon Soul Refine](https://YourOrg.github.io/Metin2_Rework_v3/calculators/dragon-soul.html) | `dragon_soul_refine_settings.py` |
+| [Horse Feed Planner](https://YourOrg.github.io/Metin2_Rework_v3/calculators/horse-level.html) | `char_horse.cpp : HORSE_LEVEL_UP_NEED_STAMINA` |
+| [Drop Chance](https://YourOrg.github.io/Metin2_Rework_v3/calculators/drop-chance.html) | `item_manager.cpp : CreateDropItem()` |
+| [Item Flag Decoder](https://YourOrg.github.io/Metin2_Rework_v3/calculators/flags.html) | `length.h` — ANTI/WEAR/RACE/MOB flags |
+
+---
+
+## Developer Guides
+
+How-to guides for building and extending the server and client.
+
+| Page | Description |
+|------|-------------|
+| [Adding a New System (E2E)](guide-Adding-a-New-System) | Complete walkthrough: UI → packet → server → DB |
+| [Build Environment](guide-Build-Environment) | CMake setup for client (MSVC/Win32) and server (GCC/Linux) |
+| [Best Practices](guide-Best-Practices) | Rework coding standards derived from the source |
+| [Asset Pipeline](guide-Asset-Pipeline) | .pck VFS, .sub icons, .mse effects, bone attachment |
+| [Localization](guide-Localization) | locale_game.txt, uiScriptLocale, adding a new language |
+| [Debugging](guide-Debugging) | syserr interpretation, sys_log, GDB crash dumps |
+| [Database & Proto Workflow](guide-Database-Proto) | item_proto/mob_proto sync, vnum ranges |
+| [Security & Anti-Cheat](guide-Security-AntiCheat) | Server-authoritative validation, speed hack, ownership checks |
+| [Skill & Buff System](guide-Skill-Buff-System) | skill_proto, AddAffect, cooldowns, mastery tiers |
+| [NPC & Spawning](guide-NPC-and-Spawning) | regen.txt, group spawns, NPC shops, coordinate ×100 factor |
+| [Horses, Mounts & Pets](guide-Horse-Mount-Pet) | Classic horse, vnum-based mounts, pet system |
+| [Economy (Shop, Cube, Refine)](guide-Economy) | Refine proto, cube.txt recipes, custom currency shops |
+
+---
+
 ## Topic Guides (Cross-Cutting)
 
 These pages explain how systems work **across all three repos**, tracing data from UI click to database.
