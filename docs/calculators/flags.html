@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Item Flag Decoder — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .flag-section { margin-bottom: 1.4rem; }
+    .flag-section h3 {
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      margin-bottom: .6rem;
+    }
+    .flag-section .check-grid { grid-template-columns: 1fr 1fr; }
+    .raw-row {
+      display: flex;
+      gap: .6rem;
+      align-items: center;
+      margin-top: .8rem;
+    }
+    .raw-row label { white-space: nowrap; font-size: .82rem; color: var(--text-muted); }
+    .raw-row input { flex: 1; }
+    .copy-btn {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      padding: .3rem .7rem;
+      font-size: .78rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tab-row { display: flex; gap: .3rem; margin-bottom: 1rem; }
+    .tab-btn {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      padding: .3rem .8rem;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab-btn.active { background: rgba(230,168,23,.15); border-color: var(--accent); color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    Metin2 Rework v3
+  </a>
+  <nav>
+    <a href="../index.html">Calculators</a>
+    <a href="https://github.com/YourOrg/Metin2_Rework_v3/wiki/blueprint-Item-System" target="_blank">Blueprint</a>
+  </nav>
+</header>
+
+<div class="container">
+  <a href="../index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    All Calculators
+  </a>
+
+  <div class="hero" style="padding-top:1rem">
+    <h1>🏷️ Item Flag Decoder</h1>
+    <p>Bitmask encoder &amp; decoder for all four item flag fields — <code>length.h</code></p>
+  </div>
+
+  <div class="calc-layout">
+    <!-- Left: encoder (tick boxes) -->
+    <div class="panel" style="grid-column: 1">
+      <h2>Encoder</h2>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
+        Tick the flags you want. The bitmask is computed live.
+      </p>
+
+      <div class="tab-row" id="encTabRow">
+        <button class="tab-btn active" data-tab="anti">ANTI_FLAG</button>
+        <button class="tab-btn"        data-tab="wear">WEAR_FLAG</button>
+        <button class="tab-btn"        data-tab="race">RACE_FLAG</button>
+        <button class="tab-btn"        data-tab="mob">MOB_FLAG</button>
+      </div>
+
+      <div id="tab-anti" class="tab-pane active">
+        <div class="check-grid" id="chk-anti"></div>
+      </div>
+      <div id="tab-wear" class="tab-pane">
+        <div class="check-grid" id="chk-wear"></div>
+      </div>
+      <div id="tab-race" class="tab-pane">
+        <div class="check-grid" id="chk-race"></div>
+      </div>
+      <div id="tab-mob" class="tab-pane">
+        <div class="check-grid" id="chk-mob"></div>
+      </div>
+
+      <div class="raw-row">
+        <label>Encoded value:</label>
+        <input type="number" id="encodedOut" readonly style="background:var(--surface-alt)" />
+        <input type="text"   id="encodedHex" readonly style="background:var(--surface-alt);width:90px;font-family:var(--font-mono)" placeholder="0x…" />
+        <button class="copy-btn" onclick="copyEncoded()">Copy</button>
+      </div>
+    </div>
+
+    <!-- Right: decoder (enter a number, see flags) -->
+    <div class="panel">
+      <h2>Decoder</h2>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
+        Paste a raw flag value from item_proto to see which flags are set.
+      </p>
+
+      <div class="tab-row" id="decTabRow">
+        <button class="tab-btn active" data-tab="danti">ANTI</button>
+        <button class="tab-btn"        data-tab="dwear">WEAR</button>
+        <button class="tab-btn"        data-tab="drace">RACE</button>
+        <button class="tab-btn"        data-tab="dmob">MOB</button>
+      </div>
+
+      <div class="field">
+        <label for="decInput">Raw value (decimal or 0x hex)</label>
+        <input type="text" id="decInput" placeholder="e.g. 192 or 0xC0" oninput="decodeRaw()" />
+      </div>
+
+      <div id="tab-danti" class="tab-pane active">
+        <div class="badge-list" id="dec-anti"><span style="color:var(--text-muted);font-size:.8rem">Enter a value above</span></div>
+      </div>
+      <div id="tab-dwear" class="tab-pane">
+        <div class="badge-list" id="dec-wear"></div>
+      </div>
+      <div id="tab-drace" class="tab-pane">
+        <div class="badge-list" id="dec-race"></div>
+      </div>
+      <div id="tab-dmob" class="tab-pane">
+        <div class="badge-list" id="dec-mob"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="formula-box">/* server-src/src/common/length.h */
+/* All flags are 32-bit bitmasks stored as DWORD in item_proto */
+anti_flag  &= ANTI_FLAG_MASK   /* see EItemAntiFlag  */
+wear_flag  &= WEAR_FLAG_MASK   /* see EItemWearFlag  */
+race_flag  &= RACE_FLAG_MASK   /* see ERaceFlag      */
+mob_flag   &= MOB_FLAG_MASK    /* see EMobFlag       */
+
+/* Usage in server: */
+if (item->GetAntiFlag() & ANTI_DROP) { /* deny drop */ }</div>
+
+  <div class="source-note">
+    Source: <code>server-src/src/common/length.h</code> — <code>EItemAntiFlag</code>,
+    <code>EItemWearFlag</code>, <code>ERaceFlag</code>, <code>EMobFlag</code>.<br>
+    All flags are <strong>32-bit</strong> bitmasks.  ANTI_FLAG and WEAR_FLAG live in <code>item_proto.anti_flag</code>
+    and <code>item_proto.wear_flags</code> columns.  RACE_FLAG / MOB_FLAG are on the mob_proto table.
+  </div>
+</div>
+
+<script src="../js/formulas.js"></script>
+<script>
+  const FLAG_DEFS = {
+    anti: M2.ANTI_FLAGS,
+    wear: M2.WEAR_FLAGS,
+    race: M2.RACE_FLAGS,
+    mob:  M2.MOB_FLAGS,
+  };
+
+  // Build encoder checkboxes
+  Object.entries(FLAG_DEFS).forEach(([key, defs]) => {
+    const container = document.getElementById('chk-' + key);
+    defs.forEach(d => {
+      const id = 'enc_' + d.name;
+      const item = document.createElement('label');
+      item.className = 'check-item';
+      item.innerHTML = `<input type="checkbox" id="${id}" data-flag="${key}" data-bit="${d.bit}" onchange="encodeAll()">
+        <span title="${d.name}">${d.label}</span>`;
+      container.appendChild(item);
+    });
+  });
+
+  // Tab switching for encoder
+  document.getElementById('encTabRow').querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('encTabRow').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('#tab-anti,#tab-wear,#tab-race,#tab-mob').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Tab switching for decoder
+  document.getElementById('decTabRow').querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('decTabRow').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('#tab-danti,#tab-dwear,#tab-drace,#tab-dmob').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-d' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function encodeAll() {
+    let value = 0;
+    const activeTab = document.querySelector('#encTabRow .tab-btn.active').dataset.tab;
+    const checkboxes = document.querySelectorAll(`#tab-${activeTab} input[type=checkbox]`);
+    checkboxes.forEach(cb => { if (cb.checked) value |= parseInt(cb.dataset.bit); });
+    document.getElementById('encodedOut').value = value;
+    document.getElementById('encodedHex').value = '0x' + value.toString(16).toUpperCase().padStart(4, '0');
+  }
+
+  function copyEncoded() {
+    const v = document.getElementById('encodedOut').value;
+    navigator.clipboard.writeText(v).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  }
+
+  function decodeRaw() {
+    const raw = document.getElementById('decInput').value.trim();
+    const val = raw.startsWith('0x') || raw.startsWith('0X')
+      ? parseInt(raw, 16)
+      : parseInt(raw, 10);
+
+    if (isNaN(val)) {
+      ['anti','wear','race','mob'].forEach(k => {
+        document.getElementById('dec-' + k).innerHTML =
+          '<span style="color:var(--text-muted);font-size:.8rem">Invalid value</span>';
+      });
+      return;
+    }
+
+    Object.entries(FLAG_DEFS).forEach(([key, defs]) => {
+      const active = M2.decodeFlags(val, defs);
+      const container = document.getElementById('dec-' + key);
+      if (active.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-muted);font-size:.8rem">None set</span>';
+      } else {
+        container.innerHTML = active.map(d =>
+          `<span class="badge active" title="${d.name}">${d.label}</span>`
+        ).join('');
+      }
+    });
+  }
+
+  // Initialise
+  encodeAll();
+</script>
+</body>
+</html>

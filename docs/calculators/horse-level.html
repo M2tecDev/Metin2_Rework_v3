@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horse Feed Planner — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: .3rem;
+      margin-top: .8rem;
+    }
+    .lv-cell {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .4rem .5rem;
+      text-align: center;
+      font-size: .78rem;
+    }
+    .lv-cell .lv  { color: var(--text-muted); font-size: .72rem; }
+    .lv-cell .val { font-family: var(--font-mono); color: var(--text); }
+    .lv-cell.highlight { border-color: var(--accent); }
+    .lv-cell.highlight .val { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    Metin2 Rework v3
+  </a>
+  <nav>
+    <a href="../index.html">Calculators</a>
+    <a href="https://github.com/YourOrg/Metin2_Rework_v3/wiki/blueprint-Character-System" target="_blank">Blueprint</a>
+  </nav>
+</header>
+
+<div class="container">
+  <a href="../index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    All Calculators
+  </a>
+
+  <div class="hero" style="padding-top:1rem">
+    <h1>🐴 Horse Feed Planner</h1>
+    <p>Feed items needed to reach your target horse level — <code>char_horse.cpp</code></p>
+  </div>
+
+  <div class="calc-layout">
+    <!-- Input -->
+    <div class="panel">
+      <h2>Horse Level Range</h2>
+
+      <div class="field">
+        <label for="currentLevel">Current Horse Level (0 = new horse)</label>
+        <div class="range-row">
+          <input type="range" id="currentRange" min="0" max="29" value="0"
+                 oninput="document.getElementById('currentLevel').value=this.value; recalc()" />
+          <input type="number" id="currentLevel" value="0" min="0" max="29"
+                 oninput="document.getElementById('currentRange').value=this.value; recalc()" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="targetLevel">Target Horse Level</label>
+        <div class="range-row">
+          <input type="range" id="targetRange" min="1" max="30" value="20"
+                 oninput="document.getElementById('targetLevel').value=this.value; recalc()" />
+          <input type="number" id="targetLevel" value="20" min="1" max="30"
+                 oninput="document.getElementById('targetRange').value=this.value; recalc()" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:1rem">
+        <label>Max Level</label>
+        <div style="font-family:var(--font-mono);color:var(--text-muted)">30</div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="panel">
+      <h2>Feed Required</h2>
+
+      <div class="result-big" id="resultTotal">—</div>
+      <div class="result-sub">total feed items needed</div>
+
+      <table class="stat-table" style="margin-top:1rem">
+        <tr><td>Current level</td> <td id="sFrom">—</td></tr>
+        <tr><td>Target level</td>  <td id="sTo">—</td></tr>
+        <tr><td>Levels to gain</td><td id="sLevels">—</td></tr>
+        <tr><td>Avg feed/level</td><td id="sAvg">—</td></tr>
+      </table>
+
+      <div style="margin-top:1rem">
+        <!-- Cumulative progress bar -->
+        <div class="prob-bar-wrap">
+          <div class="prob-label">
+            <span class="name">Progress towards Lv 30</span>
+            <span class="value" id="bProgVal">—</span>
+          </div>
+          <div class="prob-bar-bg">
+            <div class="prob-bar-fill success" id="bProg" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-level breakdown -->
+  <div class="result-panel" style="margin-top:1.5rem">
+    <h2 style="font-size:.95rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">
+      Feed per Level (entire table)
+    </h2>
+    <div class="breakdown-grid" id="breakdown"></div>
+  </div>
+
+  <div class="formula-box">/* server-src/src/game/char_horse.cpp */
+/* HORSE_LEVEL_UP_NEED_STAMINA[] — feed items required per level-up */
+totalFeed = Σ HORSE_FEED_PER_LEVEL[lv] for lv = currentLevel+1 to targetLevel</div>
+
+  <div class="source-note">
+    Source: <code>server-src/src/game/char_horse.cpp</code> — <code>HORSE_LEVEL_UP_NEED_STAMINA</code> table.<br>
+    Max horse level: <strong>30</strong>.  Feed item VNUM depends on server configuration.
+    Stamina system managed via <code>CHARACTER::SetHorseStamina()</code>.
+  </div>
+</div>
+
+<script src="../js/formulas.js"></script>
+<script>
+  // Build full feed table (levels 1–30)
+  function buildTable(fromLv, toLv) {
+    const grid = document.getElementById('breakdown');
+    grid.innerHTML = '';
+    for (let lv = 1; lv <= 30; lv++) {
+      const feed = M2.HORSE_FEED_PER_LEVEL[lv] || 0;
+      const inRange = lv > fromLv && lv <= toLv;
+      const cell = document.createElement('div');
+      cell.className = 'lv-cell' + (inRange ? ' highlight' : '');
+      cell.innerHTML = `<div class="lv">Lv ${lv}</div><div class="val">${feed}</div>`;
+      grid.appendChild(cell);
+    }
+  }
+
+  function recalc() {
+    const from = +document.getElementById('currentLevel').value;
+    const to   = +document.getElementById('targetLevel').value;
+
+    if (to <= from) {
+      document.getElementById('resultTotal').textContent = '0';
+      document.getElementById('sFrom').textContent   = from;
+      document.getElementById('sTo').textContent     = to;
+      document.getElementById('sLevels').textContent = '0';
+      document.getElementById('sAvg').textContent    = '—';
+      document.getElementById('bProgVal').textContent = '—';
+      document.getElementById('bProg').style.width   = '0%';
+      buildTable(from, to);
+      return;
+    }
+
+    const res     = M2.calcHorseFeedNeeded(from, to);
+    const total30 = M2.calcHorseFeedNeeded(0, 30).totalFeed;
+    const progPct = Math.round((res.totalFeed / total30) * 100);
+
+    document.getElementById('resultTotal').textContent = res.totalFeed.toLocaleString();
+    document.getElementById('sFrom').textContent       = from;
+    document.getElementById('sTo').textContent         = to;
+    document.getElementById('sLevels').textContent     = res.breakdown.length;
+    document.getElementById('sAvg').textContent        = res.breakdown.length > 0
+      ? Math.round(res.totalFeed / res.breakdown.length).toLocaleString()
+      : '—';
+
+    document.getElementById('bProgVal').textContent = progPct + ' % of Lv 0→30 total';
+    document.getElementById('bProg').style.width    = progPct + '%';
+
+    buildTable(from, to);
+  }
+
+  // sync ranges
+  document.getElementById('currentLevel').addEventListener('input', function() {
+    document.getElementById('currentRange').value = this.value;
+    recalc();
+  });
+  document.getElementById('targetLevel').addEventListener('input', function() {
+    document.getElementById('targetRange').value = this.value;
+    recalc();
+  });
+
+  recalc();
+</script>
+</body>
+</html>
