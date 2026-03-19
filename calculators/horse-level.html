@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horse Feed Planner — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .breakdown-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:1rem}
+    .breakdown-table th{text-align:left;padding:.3rem .5rem;color:var(--text-muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+    .breakdown-table td{padding:.3rem .5rem;border-bottom:1px solid var(--border)}
+    .breakdown-table tr:last-child td{border-bottom:none}
+    .breakdown-table td:last-child{text-align:right;font-family:var(--font-mono)}
+    .level-slider-row{display:flex;align-items:center;gap:.8rem;margin-top:.3rem}
+    .level-badge{min-width:36px;text-align:center;font-family:var(--font-mono);font-size:.9rem;color:var(--accent)}
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Metin2 Rework v3
+  </a>
+  <nav><a href="../index.html">Calculators</a></nav>
+</header>
+<div class="container">
+  <a href="../index.html" class="back-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Calculators</a>
+  <div class="hero" style="padding-top:1rem"><h1>🐴 Horse Feed Planner</h1><p>Feed items needed per level — <code>char_horse.cpp</code></p></div>
+  <div class="calc-layout">
+    <div class="panel">
+      <h2>Level Range</h2>
+      <div class="field">
+        <label>Current Level</label>
+        <div class="level-slider-row">
+          <input type="range" id="fromRange" min="0" max="29" value="0" oninput="syncFrom(this.value)"/>
+          <span class="level-badge" id="fromBadge">0</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Target Level</label>
+        <div class="level-slider-row">
+          <input type="range" id="toRange" min="1" max="30" value="30" oninput="syncTo(this.value)"/>
+          <span class="level-badge" id="toBadge">30</span>
+        </div>
+      </div>
+      <div style="margin-top:1.4rem" class="formula-box">/* char_horse.cpp */
+Feed per level-up is stored in
+HORSE_FEED_PER_LEVEL table.
+Each entry = feed items needed
+to reach level+1.</div>
+    </div>
+    <div class="panel">
+      <h2>Result</h2>
+      <div class="result-big" id="resultTotal">—</div>
+      <div class="result-sub">total feed items needed</div>
+      <table class="stat-table" style="margin-top:1.2rem">
+        <tr><td>Current level</td><td id="sFrom">—</td></tr>
+        <tr><td>Target level</td><td id="sTo">—</td></tr>
+        <tr><td>Levels to gain</td><td id="sLevels">—</td></tr>
+        <tr><td>Feed per level (avg)</td><td id="sAvg">—</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="result-panel" style="margin-top:1.5rem">
+    <h2 style="font-size:.95rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">Per-Level Breakdown</h2>
+    <div id="breakdownWrap"></div>
+  </div>
+  <div class="source-note">Source: <code>server-src/src/game/char_horse.cpp</code>. Horse max level: <strong>30</strong>.</div>
+</div>
+<script src="../js/formulas.js"></script>
+<script>
+function syncFrom(v){ document.getElementById('fromBadge').textContent=v; document.getElementById('fromRange').value=v; recalc(); }
+function syncTo(v){ document.getElementById('toBadge').textContent=v; document.getElementById('toRange').value=v; recalc(); }
+function recalc(){
+  const from=+document.getElementById('fromRange').value;
+  const to  =+document.getElementById('toRange').value;
+  document.getElementById('sFrom').textContent=from;
+  document.getElementById('sTo').textContent=to;
+  if(to<=from){
+    document.getElementById('resultTotal').textContent='0';
+    document.getElementById('sLevels').textContent='0';
+    document.getElementById('sAvg').textContent='—';
+    document.getElementById('breakdownWrap').innerHTML='<p style="color:var(--text-muted);font-size:.84rem">Target must be above current level.</p>';
+    return;
+  }
+  const res=M2.calcHorseFeedNeeded(from,to);
+  document.getElementById('resultTotal').textContent=res.totalFeed.toLocaleString();
+  document.getElementById('sLevels').textContent=res.breakdown.length;
+  const avg=res.breakdown.length?Math.round(res.totalFeed/res.breakdown.length):0;
+  document.getElementById('sAvg').textContent=avg.toLocaleString();
+  const max=Math.max(...res.breakdown.map(r=>r.feed),1);
+  document.getElementById('breakdownWrap').innerHTML=`
+    <table class="breakdown-table">
+      <thead><tr><th>Level</th><th>Feed needed</th><th style="text-align:right">% of total</th></tr></thead>
+      <tbody>${res.breakdown.map(r=>`
+        <tr>
+          <td>${r.level-1}→${r.level}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <div style="flex:1;background:var(--surface-alt);border-radius:999px;height:6px;overflow:hidden">
+                <div style="width:${(r.feed/max*100).toFixed(1)}%;height:100%;background:var(--accent);border-radius:999px"></div>
+              </div>
+              <span style="font-family:var(--font-mono);min-width:40px;text-align:right">${r.feed}</span>
+            </div>
+          </td>
+          <td>${res.totalFeed?(r.feed/res.totalFeed*100).toFixed(1)+' %':'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+recalc();
+</script>
+</body>
+</html>

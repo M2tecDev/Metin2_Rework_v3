@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upgrade Probability — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .step-row{display:grid;grid-template-columns:80px 1fr 80px 90px;gap:.4rem .6rem;align-items:center;font-size:.84rem;padding:.3rem 0;border-bottom:1px solid var(--border)}
+    .step-row:last-child{border-bottom:none}
+    .step-bar-bg{background:var(--surface-alt);border-radius:999px;height:8px;overflow:hidden}
+    .step-bar-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .35s ease}
+    .step-pct{font-family:var(--font-mono);text-align:right}
+    .step-exp{font-family:var(--font-mono);color:var(--text-muted);text-align:right;font-size:.78rem}
+    .grade-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+    .grade-btn{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);padding:.3rem .7rem;font-size:.82rem;cursor:pointer;transition:all .15s}
+    .grade-btn.active{background:rgba(230,168,23,.15);border-color:var(--accent);color:var(--accent)}
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Metin2 Rework v3
+  </a>
+  <nav><a href="../index.html">Calculators</a><a href="https://github.com/M2tecDev/Metin2_Rework_v3/wiki/blueprint-Item-System" target="_blank">Blueprint</a></nav>
+</header>
+<div class="container">
+  <a href="../index.html" class="back-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Calculators</a>
+  <div class="hero" style="padding-top:1rem"><h1>🔨 Upgrade Probability</h1><p>Expected attempts &amp; success chance — <code>CRefineManager::Refine()</code></p></div>
+  <div class="calc-layout">
+    <div class="panel">
+      <h2>Target Grade</h2>
+      <div class="grade-tabs" id="gradeTabs"></div>
+      <div class="field">
+        <label for="startGrade">Starting Grade</label>
+        <select id="startGrade" onchange="recalc()">
+          <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
+          <option value="3">+3</option><option value="4">+4</option><option value="5">+5</option>
+          <option value="6">+6</option><option value="7">+7</option><option value="8">+8</option>
+        </select>
+      </div>
+      <div class="formula-box" style="margin-top:1.2rem">+0→+1: 100%  +1→+2: 75%
++2→+3:  55%  +3→+4: 40%
++4→+5:  30%  +5→+6: 22%
++6→+7:  15%  +7→+8: 10%
++8→+9:   7%</div>
+    </div>
+    <div class="panel">
+      <h2>Summary</h2>
+      <div class="result-big" id="resultAvg">—</div>
+      <div class="result-sub">expected total attempts</div>
+      <table class="stat-table" style="margin-top:1rem">
+        <tr><td>Target grade</td>           <td id="sTarget">—</td></tr>
+        <tr><td>Starting grade</td>         <td id="sStart">—</td></tr>
+        <tr><td>Steps required</td>         <td id="sSteps">—</td></tr>
+        <tr><td>Flawless streak chance</td> <td id="sStreak">—</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="result-panel" style="margin-top:1.5rem">
+    <h2 style="font-size:.95rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">Per-Step Breakdown</h2>
+    <div style="display:grid;grid-template-columns:80px 1fr 80px 90px;gap:.2rem .6rem;margin-bottom:.4rem">
+      <span style="font-size:.75rem;color:var(--text-muted);font-weight:600">STEP</span>
+      <span style="font-size:.75rem;color:var(--text-muted);font-weight:600">SUCCESS RATE</span>
+      <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;text-align:right">PCT</span>
+      <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;text-align:right">EXP TRIES</span>
+    </div>
+    <div id="stepBreakdown">—</div>
+  </div>
+  <div class="source-note">Source: <code>server-src/src/game/refine.cpp</code> — <code>CRefineManager::Refine()</code>, <code>db/refine_proto</code>. Probability denominator: <strong>10 000</strong>.</div>
+</div>
+<script src="../js/formulas.js"></script>
+<script>
+let targetGrade=9;
+const tabs=document.getElementById('gradeTabs');
+for(let g=1;g<=9;g++){
+  const btn=document.createElement('button');
+  btn.className='grade-btn'+(g===9?' active':'');
+  btn.textContent='+'+g; btn.dataset.grade=g;
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.grade-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); targetGrade=g; recalc();
+  });
+  tabs.appendChild(btn);
+}
+function recalc(){
+  const start=+document.getElementById('startGrade').value||0;
+  if(targetGrade<=start){
+    document.getElementById('resultAvg').textContent='0';
+    document.getElementById('sTarget').textContent='+'+targetGrade;
+    document.getElementById('sStart').textContent='+'+start;
+    document.getElementById('sSteps').textContent='0';
+    document.getElementById('sStreak').textContent='100 %';
+    document.getElementById('stepBreakdown').innerHTML='<p style="color:var(--text-muted);font-size:.84rem">Target ≤ starting grade.</p>';
+    return;
+  }
+  const res=M2.calcUpgradeProbabilities(targetGrade);
+  const rel=res.steps.filter(s=>s.from>=start);
+  const total=rel.reduce((a,s)=>a+s.expectedAttempts,0);
+  const streak=rel.reduce((a,s)=>a*(s.pctSuccess/100),1)*100;
+  document.getElementById('resultAvg').textContent=total.toFixed(1);
+  document.getElementById('sTarget').textContent='+'+targetGrade;
+  document.getElementById('sStart').textContent='+'+start;
+  document.getElementById('sSteps').textContent=rel.length;
+  document.getElementById('sStreak').textContent=streak.toFixed(3)+' %';
+  document.getElementById('stepBreakdown').innerHTML=rel.map(s=>`
+    <div class="step-row">
+      <span style="color:var(--text-muted)">+${s.from}→+${s.to}</span>
+      <div class="step-bar-bg"><div class="step-bar-fill" style="width:${s.pctSuccess}%"></div></div>
+      <span class="step-pct">${s.pctSuccess} %</span>
+      <span class="step-exp">~${s.expectedAttempts}×</span>
+    </div>`).join('');
+}
+recalc();
+</script>
+</body>
+</html>

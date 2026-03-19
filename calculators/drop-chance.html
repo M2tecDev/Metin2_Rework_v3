@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drop Chance — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Metin2 Rework v3
+  </a>
+  <nav><a href="../index.html">Calculators</a><a href="https://github.com/M2tecDev/Metin2_Rework_v3/wiki/blueprint-Item-System" target="_blank">Blueprint</a></nav>
+</header>
+<div class="container">
+  <a href="../index.html" class="back-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Calculators</a>
+  <div class="hero" style="padding-top:1rem"><h1>🎲 Drop Chance Calculator</h1><p>Item drop probability — <code>ITEM_MANAGER::CreateDropItem()</code> in <code>item_manager.cpp</code></p></div>
+  <div class="calc-layout">
+    <div class="panel">
+      <h2>Item &amp; Mob</h2>
+      <div class="field">
+        <label for="baseRate">Base Rate (0–10000)<br><small style="color:var(--text-muted)">as stored in drop table (denom 10 000)</small></label>
+        <input type="number" id="baseRate" value="50" min="1" max="10000" oninput="recalc()"/>
+      </div>
+      <div class="field">
+        <label for="mobRank">Mob Rank</label>
+        <select id="mobRank" onchange="recalc()">
+          <option value="0">0 — Pawn (×1.0)</option>
+          <option value="1">1 — S.Pawn (×1.2)</option>
+          <option value="2">2 — Knight (×1.5)</option>
+          <option value="3">3 — S.Knight (×2.0)</option>
+          <option value="4">4 — Boss (×3.0)</option>
+          <option value="5">5 — King (×5.0)</option>
+        </select>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Player</h2>
+      <div class="field">
+        <label for="playerLevel">Player Level</label>
+        <input type="number" id="playerLevel" value="90" min="1" max="120" oninput="recalc()"/>
+      </div>
+      <div class="field">
+        <label for="mobLevel">Mob Level</label>
+        <input type="number" id="mobLevel" value="85" min="1" max="120" oninput="recalc()"/>
+      </div>
+      <div class="field"><label>Level Difference</label><div id="lvlDiffDisplay" style="font-family:var(--font-mono);font-size:1.1rem;color:var(--accent);padding:.3rem 0">+5</div></div>
+      <div class="field"><label>Level Penalty</label><div id="lvlPenaltyDisplay" style="font-family:var(--font-mono);font-size:.9rem;color:var(--text-muted)">×1.00</div></div>
+    </div>
+  </div>
+  <div class="result-panel">
+    <h2 style="font-size:.95rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">Drop Probability</h2>
+    <div class="result-big" id="resultPct">—</div>
+    <div class="result-sub" id="resultOneIn">—</div>
+    <table class="stat-table" style="margin-top:1.2rem">
+      <tr><td>Base rate</td>       <td id="sBase">—</td></tr>
+      <tr><td>Rank multiplier</td> <td id="sRank">—</td></tr>
+      <tr><td>Level penalty</td>   <td id="sLvl">—</td></tr>
+      <tr><td>Final chance</td>    <td id="sFinal">—</td></tr>
+    </table>
+    <div style="margin-top:1.4rem">
+      <div class="prob-bar-wrap">
+        <div class="prob-label"><span class="name">Drop Chance</span><span class="value" id="barVal">—</span></div>
+        <div class="prob-bar-bg"><div class="prob-bar-fill success" id="barFill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="formula-box">/* server-src/src/game/item_manager.cpp : CreateDropItem() */
+rawProb = (baseRate / 10000) × rankMultiplier × levelPenalty
+levelPenalty = max(0.1,  1 - max(0, playerLv - mobLv) × 0.05)
+rankMult[] = {1.0, 1.2, 1.5, 2.0, 3.0, 5.0}  // pawn→king</div>
+  <div class="source-note">Source: <code>server-src/src/game/item_manager.cpp</code>. Probability denominator: <strong>10 000</strong>. Max drop items per kill: <strong>12</strong>.</div>
+</div>
+<script src="../js/formulas.js"></script>
+<script>
+function recalc(){
+  const baseRate   = +document.getElementById('baseRate').value||0;
+  const mobRank    = +document.getElementById('mobRank').value||0;
+  const playerLv   = +document.getElementById('playerLevel').value||1;
+  const mobLv      = +document.getElementById('mobLevel').value||1;
+  const levelDiff  = playerLv - mobLv;
+  document.getElementById('lvlDiffDisplay').textContent=(levelDiff>=0?'+':'')+levelDiff;
+  const res = M2.calcDropChance(baseRate, mobRank, Math.max(0, levelDiff));
+  document.getElementById('lvlPenaltyDisplay').textContent='×'+res.lvlMod;
+  document.getElementById('resultPct').textContent=M2.fmtPct(res.pctChance);
+  document.getElementById('resultOneIn').textContent=M2.fmtOneIn(res.oneIn)+' kills';
+  document.getElementById('sBase').textContent=(baseRate/10000*100).toFixed(4)+' %';
+  document.getElementById('sRank').textContent='×'+res.rankMult;
+  document.getElementById('sLvl').textContent='×'+res.lvlMod;
+  document.getElementById('sFinal').textContent=M2.fmtPct(res.pctChance);
+  const barW=Math.min(100,res.pctChance);
+  document.getElementById('barFill').style.width=barW+'%';
+  document.getElementById('barVal').textContent=M2.fmtPct(res.pctChance);
+}
+recalc();
+</script>
+</body>
+</html>

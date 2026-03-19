@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Item Flag Decoder — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .flag-section { margin-bottom: 1.4rem; }
+    .flag-section h3 { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: .6rem; }
+    .flag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .3rem; }
+    .flag-item { display: flex; align-items: center; gap: .45rem; font-size: .8rem; cursor: pointer; padding: .25rem .4rem; border-radius: 4px; transition: background .1s; }
+    .flag-item:hover { background: var(--surface-alt); }
+    .flag-item input { accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+    .flag-item .fname { font-family: var(--font-mono); color: var(--text-muted); font-size: .72rem; }
+    .hex-input { font-family: var(--font-mono); font-size: 1.1rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); color: var(--accent); padding: .5rem .8rem; width: 100%; outline: none; transition: border-color .15s; }
+    .hex-input:focus { border-color: var(--accent); }
+    .tab-row { display: flex; gap: .3rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+    .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); padding: .5rem .9rem; font-size: .85rem; cursor: pointer; transition: all .15s; margin-bottom: -1px; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Metin2 Rework v3
+  </a>
+  <nav><a href="../index.html">Calculators</a><a href="https://github.com/M2tecDev/Metin2_Rework_v3/wiki/blueprint-Item-System" target="_blank">Blueprint</a></nav>
+</header>
+<div class="container">
+  <a href="../index.html" class="back-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Calculators</a>
+  <div class="hero" style="padding-top:1rem"><h1>🏷️ Item Flag Decoder</h1><p>Encode &amp; decode ANTI_FLAG / WEAR_FLAG / RACE_FLAG / MOB_FLAG bitmasks — <code>length.h</code></p></div>
+
+  <div class="calc-layout">
+    <!-- Encoder column -->
+    <div class="panel" style="grid-column:1/-1">
+      <div class="tab-row" id="tabRow"></div>
+      <div id="tabPanes"></div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="result-panel" style="margin-top:1.5rem">
+    <h2 style="font-size:.95rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">Encoded Value</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div>
+        <label style="font-size:.78rem;color:var(--text-muted);display:block;margin-bottom:.3rem">DECIMAL</label>
+        <input class="hex-input" id="outDec" readonly value="0"/>
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--text-muted);display:block;margin-bottom:.3rem">HEX</label>
+        <input class="hex-input" id="outHex" readonly value="0x00000000"/>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <label style="font-size:.78rem;color:var(--text-muted);display:block;margin-bottom:.3rem">DECODE A VALUE — paste hex or decimal to check boxes</label>
+      <input class="hex-input" id="decodeInput" placeholder="e.g. 0x000001C0 or 448" oninput="decodeValue(this.value)" style="color:var(--text)"/>
+    </div>
+    <div class="badge-list" id="activeBadges" style="margin-top:1rem"></div>
+  </div>
+  <div class="source-note">Source: <code>server-src/src/common/length.h</code> — <code>EAntiFlags</code>, <code>EWearFlags</code>, <code>ERaceFlags</code>, <code>EMobFlags</code>.</div>
+</div>
+<script src="../js/formulas.js"></script>
+<script>
+const FLAG_SETS = [
+  { name: 'ANTI_FLAG',  defs: M2.ANTI_FLAGS  },
+  { name: 'WEAR_FLAG',  defs: M2.WEAR_FLAGS  },
+  { name: 'RACE_FLAG',  defs: M2.RACE_FLAGS  },
+  { name: 'MOB_FLAG',   defs: M2.MOB_FLAGS   },
+];
+let activeTab = 0;
+const tabRow   = document.getElementById('tabRow');
+const tabPanes = document.getElementById('tabPanes');
+
+FLAG_SETS.forEach((fs, i) => {
+  // tab button
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (i===0?' active':'');
+  btn.textContent = fs.name;
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pane-'+i).classList.add('active');
+    activeTab = i;
+  });
+  tabRow.appendChild(btn);
+
+  // pane
+  const pane = document.createElement('div');
+  pane.className = 'tab-pane' + (i===0?' active':'');
+  pane.id = 'pane-'+i;
+  const grid = document.createElement('div');
+  grid.className = 'flag-grid';
+  fs.defs.forEach(d => {
+    const lbl = document.createElement('label');
+    lbl.className = 'flag-item';
+    lbl.innerHTML = `<input type="checkbox" data-set="${i}" data-bit="${d.bit}" onchange="encodeAll()"/>
+      <span>
+        <span class="fname">${d.name}</span><br>
+        <span style="color:var(--text)">${d.label}</span>
+      </span>`;
+    grid.appendChild(lbl);
+  });
+  pane.appendChild(grid);
+  tabPanes.appendChild(pane);
+});
+
+function encodeAll() {
+  let vals = [0,0,0,0];
+  document.querySelectorAll('input[type=checkbox][data-bit]').forEach(cb => {
+    if(cb.checked) vals[+cb.dataset.set] |= +cb.dataset.bit;
+  });
+  // Use current tab value for display
+  const v = vals[activeTab];
+  document.getElementById('outDec').value = v;
+  document.getElementById('outHex').value = '0x' + v.toString(16).toUpperCase().padStart(8,'0');
+  updateBadges();
+}
+
+function decodeValue(raw) {
+  const v = raw.startsWith('0x')||raw.startsWith('0X') ? parseInt(raw,16) : parseInt(raw,10);
+  if(isNaN(v)) return;
+  // apply to current tab
+  const fs = FLAG_SETS[activeTab];
+  document.querySelectorAll(`input[type=checkbox][data-set="${activeTab}"]`).forEach(cb => {
+    cb.checked = (v & +cb.dataset.bit) !== 0;
+  });
+  document.getElementById('outDec').value = v;
+  document.getElementById('outHex').value = '0x' + v.toString(16).toUpperCase().padStart(8,'0');
+  updateBadges();
+}
+
+function updateBadges() {
+  const container = document.getElementById('activeBadges');
+  const active = [];
+  document.querySelectorAll('input[type=checkbox][data-bit]:checked').forEach(cb => {
+    const setIdx = +cb.dataset.set;
+    const bit    = +cb.dataset.bit;
+    const d = FLAG_SETS[setIdx].defs.find(x=>x.bit===bit);
+    if(d) active.push({ set: FLAG_SETS[setIdx].name, name: d.name, label: d.label });
+  });
+  if(!active.length) { container.innerHTML = '<span style="color:var(--text-muted);font-size:.8rem">No flags set</span>'; return; }
+  container.innerHTML = active.map(a =>
+    `<span class="badge active" title="${a.set}">${a.name}</span>`
+  ).join('');
+}
+
+updateBadges();
+</script>
+</body>
+</html>

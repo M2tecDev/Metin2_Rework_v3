@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon Soul Refine — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .type-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem}
+    .type-btn{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);padding:.3rem .8rem;font-size:.82rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.3rem}
+    .type-btn.active{background:rgba(230,168,23,.15);border-color:var(--accent);color:var(--accent)}
+    .ds-icon{width:10px;height:10px;border-radius:50%;display:inline-block}
+    .ds-red{background:#e55}.ds-yellow{background:#eb3}.ds-blue{background:#58f}
+    .ds-white{background:#ddd}.ds-black{background:#555;border:1px solid #888}.ds-green{background:#3b3}
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Metin2 Rework v3
+  </a>
+  <nav><a href="../index.html">Calculators</a></nav>
+</header>
+<div class="container">
+  <a href="../index.html" class="back-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Calculators</a>
+  <div class="hero" style="padding-top:1rem"><h1>🐉 Dragon Soul Refine</h1><p>Refine probability &amp; stat multiplier — <code>dragon_soul_refine_settings.py</code></p></div>
+  <div class="calc-layout">
+    <div class="panel">
+      <h2>Dragon Soul Properties</h2>
+      <div class="field"><label>Type</label><div class="type-tabs" id="typeTabs"></div></div>
+      <div class="field">
+        <label for="dsGrade">Grade (0–4)</label>
+        <select id="dsGrade" onchange="recalc()">
+          <option value="0">Grade 0</option><option value="1">Grade 1</option><option value="2">Grade 2</option><option value="3">Grade 3</option><option value="4">Grade 4</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="dsStep">Step (0–4)</label>
+        <select id="dsStep" onchange="recalc()">
+          <option value="0">Step 0</option><option value="1">Step 1</option><option value="2">Step 2</option><option value="3">Step 3</option><option value="4">Step 4</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="dsStrength">Strength (1–10)</label>
+        <div class="range-row">
+          <input type="range" id="dsStrRange" min="1" max="10" value="5" oninput="document.getElementById('dsStrength').value=this.value;recalc()"/>
+          <input type="number" id="dsStrength" value="5" min="1" max="10" oninput="document.getElementById('dsStrRange').value=this.value;recalc()"/>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Results</h2>
+      <table class="stat-table"><tr><td>Type</td><td id="rType">—</td></tr><tr><td>Grade / Step</td><td id="rGradeStep">—</td></tr><tr><td>Strength</td><td id="rStrength">—</td></tr></table>
+      <div style="margin-top:1.4rem">
+        <div class="prob-bar-wrap">
+          <div class="prob-label"><span class="name">Step-Up Chance</span><span class="value" id="bStepVal">—</span></div>
+          <div class="prob-bar-bg"><div class="prob-bar-fill success" id="bStep" style="width:0%"></div></div>
+        </div>
+        <div class="prob-bar-wrap">
+          <div class="prob-label"><span class="name">Grade-Up Chance</span><span class="value" id="bGradeVal">—</span></div>
+          <div class="prob-bar-bg"><div class="prob-bar-fill info" id="bGrade" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:1.4rem"><div class="result-big" id="rStatMult">—</div><div class="result-sub">stat multiplier</div></div>
+    </div>
+  </div>
+  <div class="result-panel" style="margin-top:1.5rem">
+    <h2 style="font-size:.95rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">Expected Attempts to Max (Grade 4, Step 4)</h2>
+    <table class="stat-table">
+      <tr><td>Step-ups needed</td><td id="rStepUpsNeeded">—</td></tr>
+      <tr><td>Grade-ups needed</td><td id="rGradeUpsNeeded">—</td></tr>
+      <tr><td>Expected step-up attempts</td><td id="rExpStep">—</td></tr>
+      <tr><td>Expected grade-up attempts</td><td id="rExpGrade">—</td></tr>
+    </table>
+  </div>
+  <div class="formula-box">/* dragon_soul_refine_settings.py */
+stepUpPct  = BASE_STEP_PCT[step]  - grade×3   (floor 1%)
+gradeUpPct = BASE_GRADE_PCT[grade]             (floor 1%)
+statMult   = (1+grade×0.20)×(1+step×0.10)×(strength/10)</div>
+  <div class="source-note">Source: <code>server-src/src/game/dragon_soul.cpp</code>, <code>dragon_soul_refine_settings.py</code>. Max: Grade 4, Step 4, Strength 10.</div>
+</div>
+<script src="../js/formulas.js"></script>
+<script>
+let selectedType=0;
+const DS_COLORS=['ds-red','ds-yellow','ds-blue','ds-white','ds-black','ds-green'];
+const typeTabs=document.getElementById('typeTabs');
+M2.DS_TYPE_NAMES.forEach((name,i)=>{
+  const btn=document.createElement('button');
+  btn.className='type-btn'+(i===0?' active':'');
+  btn.innerHTML=`<span class="ds-icon ${DS_COLORS[i]}"></span>${name}`;
+  btn.addEventListener('click',()=>{ document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); selectedType=i; recalc(); });
+  typeTabs.appendChild(btn);
+});
+function recalc(){
+  const grade=+document.getElementById('dsGrade').value;
+  const step=+document.getElementById('dsStep').value;
+  const strength=+document.getElementById('dsStrength').value||1;
+  const ch=M2.calcDragonSoulRefineChance(grade,step);
+  const mult=M2.calcDragonSoulStatMultiplier(grade,step,strength);
+  document.getElementById('rType').textContent=M2.DS_TYPE_NAMES[selectedType];
+  document.getElementById('rGradeStep').textContent=`Grade ${grade} / Step ${step}`;
+  document.getElementById('rStrength').textContent=strength+' / 10';
+  document.getElementById('rStatMult').textContent='×'+mult.toFixed(3);
+  document.getElementById('bStepVal').textContent=ch.stepUpPct+' %';
+  document.getElementById('bGradeVal').textContent=ch.gradeUpPct+' %';
+  document.getElementById('bStep').style.width=ch.stepUpPct+'%';
+  document.getElementById('bGrade').style.width=ch.gradeUpPct+'%';
+  const sl=Math.max(0,4-step),gl=Math.max(0,4-grade);
+  document.getElementById('rStepUpsNeeded').textContent=sl;
+  document.getElementById('rGradeUpsNeeded').textContent=gl;
+  document.getElementById('rExpStep').textContent=sl>0?'~'+(100/ch.stepUpPct*sl).toFixed(1):'—';
+  document.getElementById('rExpGrade').textContent=gl>0?'~'+(100/ch.gradeUpPct*gl).toFixed(1):'—';
+}
+recalc();
+</script>
+</body>
+</html>
