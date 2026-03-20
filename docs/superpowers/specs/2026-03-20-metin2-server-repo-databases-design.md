@@ -70,6 +70,7 @@ Add and correct only. Never remove existing content.
 **ADD: "The Four Repositories" section**
 
 New 4-column table:
+
 | Repo | Language | Role | Key contents |
 |------|----------|------|--------------|
 | server-src | C++ | Build source for server binaries | game/, db/, qc/, common/, vendor/ |
@@ -99,7 +100,7 @@ client-bin/ ──(pack.py)──► packed .epk assets loaded by Metin2.exe
 Source code vs runtime: you compile once in server-src when the C++ changes; the resulting binaries are copied to server/. The server/ repo holds configs, SQL schema, and management scripts that change independently of the C++ source — a config tweak does not require a recompile.
 
 **UPDATE: File Locations Overview table**
-Prefix all server-side paths with `server/` (e.g. `server/share/conf/item_proto.txt`). Add rows for `server/sql/`, `server/share/bin/`, `server/share/locale/english/quest/`.
+Prefix all server-side runtime paths with `server/` (e.g. `server/share/conf/item_proto.txt`). Add rows for `server/sql/`, `server/share/bin/`, `server/share/locale/english/quest/`.
 
 ---
 
@@ -125,16 +126,16 @@ Existing content (startup order, verification strings, shutdown order, common mi
 
 **ADD: "Step 0b — Database Setup" section**
 - 5 databases: `account`, `common`, `hotbackup`, `log`, `player`
-- `hotbackup` is empty — must exist but no SQL to import
+- `hotbackup` is empty — must exist but no SQL to import (only `account.sql`, `common.sql`, `log.sql`, `player.sql` are in `server/sql/`)
 - Import commands: `mysql < server/sql/account.sql` etc.
 
 **ADD: "Step 0c — Quest Compilation" section**
 - MUST `cd server/share/locale/english/quest/` first
 - Then `python make.py`
-- Explain WHY cwd matters: make.py uses relative paths to find `.quest` source files
+- Explain WHY cwd matters: make.py uses relative paths to find `.quest` source files; running it from any other directory will fail to locate the source files
 
 **ADD: "Step 0d — One-Time Setup with install.py" section**
-- `python install.py` — run once after first setup
+- `python install.py` — run once after first setup from `server/` root
 - What it does: creates channel directories, links share/ folders
 
 **UPDATE: startup and shutdown commands** to use `python start.py` / `python stop.py` as the primary method (keep the manual `game`/`db` explanation as "what the scripts do under the hood")
@@ -150,16 +151,19 @@ Existing content (startup order, verification strings, shutdown order, common mi
 #### 2.4 `wiki/start-workflow.md`
 
 **UPDATE: `.quest` source file row** — Notes column:
-"Must `cd server/share/locale/english/quest/` first, then `python make.py` — cwd is required"
+"Must `cd server/share/locale/english/quest/` first, then `python make.py` — cwd is required because make.py uses relative paths"
 
 **UPDATE: C++ server code rows** — Notes column:
 "Compile in server-src → copy binary to `server/share/bin/` → `python stop.py` → `python start.py`"
 
-**UPDATE: Safe Restart Sequence** — replace manual `game`/`db` start/stop lines with `python stop.py` / `python start.py`
+**UPDATE: Safe Restart Sequence** — replace manual `game`/`db` start/stop lines with `python stop.py` / `python start.py` (run from `server/` root)
 
 **ADD: management script rows** to the master reference table:
-| `server/share/conf/*.txt` config files | No | No | No | ✓ | No | No | No | Game reads conf at startup |
-| Management scripts (start/stop/install/clear) | No | No | No | No | No | No | No | Script changes take effect next run |
+
+| I changed... | Run qc? | Recompile server? | Restart db? | Restart game? | Recompile client? | Repack assets? | Restart client? | Notes |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `server/share/conf/*.txt` config files | — | — | — | ✓ | — | — | — | Game reads conf at startup |
+| Management scripts (start/stop/install/clear) | — | — | — | — | — | — | — | Script changes take effect next invocation |
 
 **ADD: "Multi-channel note"** callout: `start.py` manages all configured channels automatically — no need to start each game process individually.
 
@@ -173,7 +177,7 @@ Content:
 - After `cmake --install`, copy outputs to `server/`:
 
 ```bash
-# Copy game and db binaries
+# Linux / FreeBSD — copy game and db binaries
 cp server-src/build/_install/bin/game  server/share/bin/
 cp server-src/build/_install/bin/db    server/share/bin/
 cp server-src/build/_install/bin/qc    server/share/bin/
@@ -194,18 +198,18 @@ copy server-src\build\_install\bin\qc.exe    server\share\locale\english\quest\
 #### 2.6 `wiki/guide-Database-Proto.md`
 
 **UPDATE: proto file path references**
-- `item_proto.txt` → `server/share/conf/item_proto.txt`
-- `mob_proto.txt` → `server/share/conf/mob_proto.txt`
+- All references to `item_proto.txt` → `server/share/conf/item_proto.txt`
+- All references to `mob_proto.txt` → `server/share/conf/mob_proto.txt`
 
-**UPDATE: SQL import section** — reference `server/sql/*.sql` as the canonical location
+**UPDATE: SQL import section** — reference `server/sql/*.sql` as the canonical location for schema files
 
 **UPDATE: stop/start commands** in "Step 5 — Restart db Process":
-- `./stop.sh && ./start.sh` → `python stop.py && python start.py` (from `server/` root)
+- `./stop.sh && ./start.sh` → `python stop.py && python start.py` (run from `server/` root)
 
 **UPDATE: Key Files table** — add rows:
 | `share/conf/item_proto.txt` | server | Tab-separated item definitions read by db at startup |
 | `share/conf/mob_proto.txt` | server | Tab-separated mob definitions read by db at startup |
-| `sql/account.sql` etc. | server | Database schema files |
+| `sql/account.sql` / `common.sql` / `log.sql` / `player.sql` | server | Database schema files |
 
 ---
 
@@ -214,102 +218,362 @@ copy server-src\build\_install\bin\qc.exe    server\share\locale\english\quest\
 **UPDATE: Repositories table** — add `server` row:
 | **server** | Runtime server files — configs (`share/conf/`), SQL schema (`sql/`), management scripts (`start.py`, `stop.py`, `install.py`), compiled binary destination (`share/bin/`) |
 
-**UPDATE: Path A** entry path:
-`Overview` → `Requirements` → `Server Setup` (which now includes binary placement + install.py) → `Client Setup` → `First Change` → `Daily Workflow`
+**UPDATE: Path A** entry path to reference Server Setup page (which now includes binary placement + install.py):
+`Overview` → `Requirements` → `Server Setup` → `Client Setup` → `First Change` → `Daily Workflow`
 
 ---
 
 ## 3. Task 3 — GitHub Pages: Item & Monster Databases
 
-**Branch:** `gh-pages`
-**New files:** `calculators/items.html`, `calculators/mobs.html`
-**Updated files:** `calculators/index.html`
-**Not changed:** `css/style.css` (each database page uses an inline `<style>` block for table-specific CSS)
+### Branch: `gh-pages`
 
-### 3.1 Shared architecture for both pages
+**Existing gh-pages structure:**
+```
+.nojekyll
+css/style.css                  ← shared dark theme CSS (not modified)
+js/formulas.js
+index.html                     ← hub page (UPDATED)
+calculators/
+  damage.html
+  dragon-soul.html
+  drop-chance.html
+  flags.html
+  horse-level.html
+  upgrade.html
+```
+
+**New files:** `calculators/items.html`, `calculators/mobs.html`
+**Updated file:** `index.html` (at gh-pages root, NOT in calculators/)
+
+Calculator pages link to `../css/style.css`. Each database page includes an inline `<style>` block for table-specific CSS — the shared `css/style.css` is not modified.
+
+---
+
+### 3.1 Raw data sources (all served from GitHub raw — CORS headers provided by GitHub CDN)
+
+| File | URL |
+|------|-----|
+| item_proto.txt | `https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/item_proto.txt` |
+| mob_proto.txt | `https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/mob_proto.txt` |
+| itemdesc.txt | `https://raw.githubusercontent.com/d1str4ught/m2dev-client/main/assets/locale/locale/en/itemdesc.txt` |
+
+GitHub raw URLs (`raw.githubusercontent.com`) return `Access-Control-Allow-Origin: *` headers — `fetch()` from any origin works without a proxy.
+
+---
+
+### 3.2 Shared architecture (both pages)
 
 **Data loading:**
 ```
 Page load
-  → fetch(item_proto_url) + fetch(itemdesc_url OR mob_proto_url) in parallel
+  → fetch() all needed URLs in parallel (Promise.all)
   → show spinner during load
-  → parse TSV: split lines, skip blanks/comments, split each line by \t
-  → build in-memory array of objects with named fields
-  → hide spinner, show "Loaded X entries from [filename]" with raw URL link
-  → render initial table (sorted by vnum ascending)
+  → parse TSV: split on \n, skip blank lines and comment lines (starting with //)
+  → split each data line on \t, map fields by index to named properties
+  → hide spinner, show "Loaded X entries from [filename]" with clickable raw URL link
+  → render initial table (default sort: vnum ascending)
 ```
 
 **Interaction model:**
-- Filter inputs (`input` event) → re-filter + re-render table body
-- Column header click → toggle sort direction on that column, re-render, update ▲/▼ indicator
-- Row click → toggle inline detail `<tr>` below the clicked row (collapse any previously open row first)
-- URL hash `#<vnum>` on load → auto-find that entry, scroll to it, expand detail
+- Filter inputs (`input` event on text/number, `change` on select/checkbox) → re-filter array → re-render `<tbody>`
+- Column header `<th>` click → toggle sort direction on that column, re-render, update ▲/▼ indicator on active header
+- Data row click → if detail row already open below it, close it; otherwise close any open detail row, then insert a new `<tr class="detail-row">` with a `<td colspan="N">` containing the detail panel; smooth height transition via CSS max-height
+- URL hash `#<vnum>` on `DOMContentLoaded` → find entry with that vnum, scroll to its row, click it to open detail
 
 **Error handling:**
-- fetch fails → show error banner with raw URL for manual verification
-- Line parse fails → silently skip; show "X lines skipped due to parse errors" footer (only if > 0)
+- `fetch()` rejects or response not ok → show error banner: "Failed to load [filename]. Verify the file exists: [raw URL]"
+- Line with wrong column count → silently skip; increment `parseErrors` counter
+- After render: if `parseErrors > 0`, show "X lines skipped due to parse errors" at bottom of page
 
-**CSS approach:** Inline `<style>` in each file. Base theme from `../css/style.css`. New classes needed: `.db-table`, `.db-row`, `.detail-row`, `.detail-content`, `.filter-bar`, `.badge`, `.spinner`, `.status-bar`.
+**URL hash update:** When a detail row opens, update `location.hash = '#' + vnum` so the URL is shareable.
 
-### 3.2 `calculators/items.html`
+---
 
-**Raw data sources:**
-- `https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/item_proto.txt`
-- `https://raw.githubusercontent.com/d1str4ught/m2dev-client/main/assets/locale/locale/en/itemdesc.txt`
+### 3.3 `calculators/items.html`
 
-**item_proto.txt column mapping (0-indexed, tab-separated):**
-```
-0:vnum  1:name  2:type  3:subtype  4:weight  5:size  6:antiflag  7:flag
-8:wearflag  9:immuneflag  10:gold  11:shop_buy_price
-12:limittype0  13:limitvalue0  14:limittype1  15:limitvalue1
-16:applytype0  17:applyvalue0  18:applytype1  19:applyvalue1
-20:applytype2  21:applyvalue2
-22:value0  23:value1  24:value2  25:value3  26:value4  27:value5
-28:socket_pct  29:addon_type
-```
+#### Data sources
+- item_proto.txt (tab-separated, no header row — first data line is a real item)
+- itemdesc.txt: lines matching `/^\d+\t/` → parse as `vnum<TAB>description text`; build a `Map<vnum, description>` joined to items by vnum
 
-Note: `dwRefinedVnum` is not in the column list provided; upgrade chain uses `value0` for weapon-type items or a separate field if present. Implement upgrade chain from `value0` for now, skip if zero.
+#### item_proto.txt column mapping (0-indexed)
 
-**Main table columns:** vnum | Name | Type | Buy Price | Stats
+| Index | Field name |
+|-------|-----------|
+| 0 | vnum |
+| 1 | name |
+| 2 | type |
+| 3 | subtype |
+| 4 | weight |
+| 5 | size |
+| 6 | antiflag |
+| 7 | flag |
+| 8 | wearflag |
+| 9 | immuneflag |
+| 10 | gold |
+| 11 | shop_buy_price |
+| 12 | limittype0 |
+| 13 | limitvalue0 |
+| 14 | limittype1 |
+| 15 | limitvalue1 |
+| 16 | applytype0 |
+| 17 | applyvalue0 |
+| 18 | applytype1 |
+| 19 | applyvalue1 |
+| 20 | applytype2 |
+| 21 | applyvalue2 |
+| 22 | value0 |
+| 23 | value1 |
+| 24 | value2 |
+| 25 | value3 |
+| 26 | value4 |
+| 27 | value5 |
+| 28 | socket_pct |
+| 29 | addon_type |
 
-**Detail panel fields:** name, vnum, type (readable), subtype, description (from itemdesc.txt or "No description available"), limits (limittype0/1 → level/stat requirement), all 3 apply bonuses (skip zero), value0-5 with type-aware labels, socket_pct, anti-flag tags, flag tags, buy price / sell price (gold field)
+#### Type number → readable name mapping
 
-**Filters:** text search (name), type dropdown, "Has bonuses" toggle, "Quest items" toggle
+| Number | Name |
+|--------|------|
+| 0 | None |
+| 1 | Weapon |
+| 2 | Armor |
+| 3 | Consumable |
+| 4 | Auto-Use |
+| 5 | Material |
+| 6 | Special |
+| 7 | Tool |
+| 8 | Lottery |
+| 9 | Currency (Yang) |
+| 10 | Metin Stone |
+| 11 | Container |
+| 12 | Fish |
+| 13 | Rod |
+| 14 | Resource |
+| 15 | Campfire |
+| 16 | Unique |
+| 17 | Skillbook |
+| 18 | Quest Item |
+| 19 | Polymorph |
+| 20 | Treasure Box |
+| 21 | Treasure Key |
+| 22 | Skillbook (Forget) |
+| 23 | Gift Box |
+| 24 | Pick |
+| 25 | Hair |
+| 26 | Medium |
+| 27 | Costume |
+| 28 | Dragon Soul |
+| 29 | Dragon Soul Special |
+| 30 | Extract |
+| 31 | Secondary Coin |
+| 32 | Ring |
+| 33 | Belt |
 
-**Type/apply/flag mappings:** as specified in the task brief (all 34 item types, key apply types, antiflag bits)
+#### Apply type number → stat name mapping (key values; others shown as raw number)
 
-### 3.3 `calculators/mobs.html`
+| Number | Name |
+|--------|------|
+| 0 | None |
+| 1 | Max HP |
+| 2 | Max SP (Mana) |
+| 3 | Constitution (HT) |
+| 4 | Intelligence (IQ) |
+| 5 | Strength (ST) |
+| 6 | Dexterity (DX) |
+| 11 | Attack Speed |
+| 12 | Movement Speed |
+| 13 | Cast Speed |
+| 16 | Attack Bonus |
+| 17 | Defense Bonus |
+| 18 | Magic Attack |
+| 19 | Magic Defense |
+| 21 | Critical Hit % |
+| 22 | Penetrating Hit % |
+| 35 | Sword Resistance |
+| 36 | Two-Hand Resistance |
+| 37 | Dagger Resistance |
+| 40 | Magic Resistance |
 
-**Raw data source:**
-- `https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/mob_proto.txt`
+#### Antiflag bitmask → tag labels
 
-**mob_proto.txt column mapping (0-indexed, tab-separated):**
-```
-0:vnum  1:name  2:rank  3:type  4:battle_type  5:level  6:size  7:ai_flag
-8:mount_capacity  9:setRaceFlag  10:setImmuneFlag
-11:gold_min  12:gold_max  13:exp  14:def
-15:attack_speed  16:move_speed  17:aggressive_hp_pct  18:aggressive_sight
-19:attack_range  20:drop_item  21:resurrection_vnum
-22:enchant_curse  23:enchant_slow  24:enchant_poison  25:enchant_stun
-26:enchant_critical  27:enchant_penetrate
-28:resist_sword  29:resist_twohand  30:resist_dagger  31:resist_bell
-32:resist_fan  33:resist_bow  34:resist_fire  35:resist_elect
-36:resist_magic  37:resist_wind  38:resist_poison
-39:dam_multiply  40:summon_vnum  41:drain_sp  42:mob_color
-43:polymorph_item  44:hpPercentage  45:healOnKill  46:MAX_HP
-```
+| Bit | Label |
+|-----|-------|
+| 0 | No Drop |
+| 1 | No Trade |
+| 2 | No Sell |
+| 3 | No Equip |
+| 4 | No Warrior |
+| 5 | No Assassin |
+| 6 | No Sura |
+| 7 | No Shaman |
+| 8 | Male Only |
+| 9 | Female Only |
 
-**Main table columns:** vnum | Name | Type | Rank | Level | Max HP | EXP
+#### Type-aware value labels for detail panel
 
-**Detail panel fields:** name, vnum, type (readable), rank (readable), level, max HP, defense, attack/move speed, gold range, exp, aggressive sight + HP%, attack range, resistances (skip zeros), enchants (skip zeros), AI flag tags, immune flag tags, dam_multiply (if ≠ 1.0), summon_vnum link, resurrection_vnum link, drop_item link to items.html
+- **Weapon (type=1):** value0=Min ATK, value1=Max ATK, value2=Magic Min ATK, value3=Magic Max ATK
+- **Armor (type=2):** value0=Defense, value1=Magic Defense
+- **Consumable/Use (type=3 or 4):** value0=HP Restore, value1=SP Restore, value2=Effect Type, value3=Duration (ms)
+- **All other types:** show raw `value0`–`value5` labels
 
-**Filters:** text search (name), type dropdown (Monster/NPC/Stone/All), rank dropdown, level range min/max, "Aggressive only" toggle, "Boss & King only" toggle
+#### Main table columns
+vnum (sortable) | Name | Type | Buy Price (formatted with commas) | Stats (first non-zero applytype → "ST +10" style)
 
-**Rank/type/AI/immune mappings:** as specified in the task brief
+#### Detail panel fields
+Full name + vnum, type (readable) + subtype, description (from itemdesc Map by vnum, or "No description available"), limits (limittype0/1: type 1=Level requirement, type 2=Stat requirement → display label+value, skip if limitvalue=0), all 3 apply bonuses (format: "Strength (ST): +15", skip if applytype=0 or applyvalue=0), value0–5 with type-aware labels (skip zeros), socket_pct (if > 0: "Socket Chance: X%"), antiflag tags (render each set bit as a badge), buy price / sell price (gold field), upgrade chain: if value0 > 0 and type=1 treat value0 as upgrade vnum and render "Upgrades to: [name] (#vnum)" as clickable `href="#vnum"`
 
-### 3.4 `calculators/index.html` update
+#### Filters
+- Text search → instant filter on `name` field (case-insensitive)
+- Type dropdown → "All Types" + one option per type from mapping above
+- "Has bonuses" checkbox → only items where at least one applytype > 0 and applyvalue > 0
+- "Quest items" checkbox → only items where type === 18 (Quest Item in the type mapping above)
 
-**ADD** a "Reference Databases" `section-title` + `card-grid` **above** the existing "Combat & Economy" section:
+#### Results count
+"Showing X of Y items" updated on every filter change
+
+---
+
+### 3.4 `calculators/mobs.html`
+
+#### Data source
+mob_proto.txt (tab-separated, no header row)
+
+#### mob_proto.txt column mapping (0-indexed)
+
+| Index | Field name |
+|-------|-----------|
+| 0 | vnum |
+| 1 | name |
+| 2 | rank |
+| 3 | type |
+| 4 | battle_type |
+| 5 | level |
+| 6 | size |
+| 7 | ai_flag |
+| 8 | mount_capacity |
+| 9 | setRaceFlag |
+| 10 | setImmuneFlag |
+| 11 | gold_min |
+| 12 | gold_max |
+| 13 | exp |
+| 14 | def |
+| 15 | attack_speed |
+| 16 | move_speed |
+| 17 | aggressive_hp_pct |
+| 18 | aggressive_sight |
+| 19 | attack_range |
+| 20 | drop_item |
+| 21 | resurrection_vnum |
+| 22 | enchant_curse |
+| 23 | enchant_slow |
+| 24 | enchant_poison |
+| 25 | enchant_stun |
+| 26 | enchant_critical |
+| 27 | enchant_penetrate |
+| 28 | resist_sword |
+| 29 | resist_twohand |
+| 30 | resist_dagger |
+| 31 | resist_bell |
+| 32 | resist_fan |
+| 33 | resist_bow |
+| 34 | resist_fire |
+| 35 | resist_elect |
+| 36 | resist_magic |
+| 37 | resist_wind |
+| 38 | resist_poison |
+| 39 | dam_multiply |
+| 40 | summon_vnum |
+| 41 | drain_sp |
+| 42 | mob_color |
+| 43 | polymorph_item |
+| 44 | hpPercentage |
+| 45 | healOnKill |
+| 46 | MAX_HP |
+
+#### Rank number → readable name
+
+| Number | Name |
+|--------|------|
+| 0 | Pawn |
+| 1 | Knight |
+| 2 | Boss |
+| 3 | King |
+
+#### Type number → readable name
+
+| Number | Name |
+|--------|------|
+| 0 | Monster |
+| 1 | NPC |
+| 2 | Stone |
+| 3 | Warp/Portal |
+| 4 | Door |
+| 5 | Building |
+| 6 | PC |
+| 7 | Polymorph |
+| 8 | Horse/Mount |
+
+#### AI flag bitmask → tag labels
+
+| Bit | Label |
+|-----|-------|
+| 0 | Aggressive |
+| 1 | No Move |
+| 2 | Coward |
+| 3 | Group Assist |
+| 4 | Stone Skin |
+| 5 | Revive |
+
+#### Immune flag bitmask → tag labels
+
+| Bit | Label |
+|-----|-------|
+| 0 | Immune Stun |
+| 1 | Immune Slow |
+| 2 | Immune Knockback |
+| 3 | Immune Curse |
+| 4 | Immune Poison |
+| 5 | Immune Terror |
+| 6 | Immune Reflect |
+
+#### Resistance fields (columns 28–38) → readable label
+
+resist_sword=Sword, resist_twohand=Two-Hand, resist_dagger=Dagger, resist_bell=Bell, resist_fan=Fan, resist_bow=Bow, resist_fire=Fire, resist_elect=Lightning, resist_magic=Magic, resist_wind=Wind, resist_poison=Poison
+
+#### Enchant fields (columns 22–27) → readable label
+
+enchant_curse=Curse Chance, enchant_slow=Slow Chance, enchant_poison=Poison Chance, enchant_stun=Stun Chance, enchant_critical=Critical Chance, enchant_penetrate=Penetrate Chance
+
+#### Main table columns
+vnum (sortable) | Name | Type (readable) | Rank (readable) | Level (sortable) | Max HP (formatted, sortable) | EXP (sortable)
+
+#### Detail panel fields
+Full name + vnum, type (readable), rank (readable), level, Max HP (formatted), defense, attack speed, move speed, gold drop range ("X – Y yang"; skip if both 0), EXP, aggressive sight + HP% threshold (skip if aggressive_sight=0), attack range, all resistance fields > 0 (format: "Fire Resistance: 30%"), all enchant fields > 0 (format: "Stun Chance: 15%"), AI flag tags, immune flag tags, dam_multiply (if != 1.0 and != "1.00"), summon_vnum > 0 → "Summons: [name] (#vnum)" as `href="#vnum"` on same page, resurrection_vnum > 0 → "Resurrects as: [name] (#vnum)" as `href="#vnum"`, drop_item > 0 → "Drops item: #[vnum]" as `href="items.html#vnum"`
+
+#### Cross-link from mobs to items
+`drop_item` (column 20) contains the item vnum to drop. Link: `items.html#<drop_item_vnum>`. Opening this link opens items.html with that item pre-selected via URL hash.
+
+#### Filters
+- Text search → filter on `name` (case-insensitive)
+- Type dropdown → "All" + Monster / NPC / Stone / Warp/Portal / Other
+- Rank dropdown → "All" + Pawn / Knight / Boss / King
+- Level range → min input + max input (both optional; empty = no bound)
+- "Aggressive only" checkbox → only mobs where bit 0 of ai_flag is set
+- "Boss & King only" checkbox → only mobs where rank >= 2
+
+#### Results count
+"Showing X of Y entries" updated on every filter change
+
+---
+
+### 3.5 `index.html` update (gh-pages root)
+
+The existing `index.html` has these sections in order:
+1. "Combat & Economy" — damage, upgrade, drop-chance
+2. "Progression" — dragon-soul, horse-level
+3. "Item Flags" — flags
+
+**ADD** a new section **above** "Combat & Economy":
 
 ```html
 <div class="section-title">Reference Databases</div>
@@ -327,47 +591,53 @@ Note: `dwRefinedVnum` is not in the column list provided; upgrade chain uses `va
 </div>
 ```
 
+The navigation header and footer of `index.html` are not changed.
+
 ---
 
 ## 4. Execution Order
 
-1. `git submodule add` → commit `.gitmodules` + `server` entry on `master`
-2. Update 7 wiki files in `wiki/` → sync to `Metin2_Rework_v3.wiki` → commit + push both
-   - Order: concept-architecture → start-requirements → start-server-setup → start-workflow → guide-Build-Environment → guide-Database-Proto → Home
-3. Checkout `gh-pages` branch
-4. Create `calculators/items.html`
-5. Create `calculators/mobs.html`
-6. Update `calculators/index.html`
-7. Commit + push `gh-pages`
+1. **master branch:**
+   - `git submodule add` → commit
+   - Update 7 wiki files in order: concept-architecture → start-requirements → start-server-setup → start-workflow → guide-Build-Environment → guide-Database-Proto → Home
+   - Sync all 7 files to `Metin2_Rework_v3.wiki` repo → commit + push both
+
+2. **gh-pages branch:**
+   - `git checkout gh-pages`
+   - Create `calculators/items.html`
+   - Create `calculators/mobs.html`
+   - Update `index.html` (add Reference Databases section)
+   - Commit + push gh-pages
 
 ---
 
 ## 5. Quality Rules
 
 1. English only
-2. Wiki: add and correct, never remove
+2. Wiki: add and correct, never remove existing content
 3. Calculator pages: all data fetched live from raw GitHub URLs — no hardcoded game data
 4. Calculator pages: pure HTML + JavaScript, no backend required
-5. GitHub raw URLs support CORS — `fetch()` works directly
-6. Detail panels show only non-zero/non-null fields (skip zero resistances, zero enchants, etc.)
+5. GitHub raw URLs (`raw.githubusercontent.com`) provide `Access-Control-Allow-Origin: *` — `fetch()` works directly from any origin including GitHub Pages
+6. Detail panels skip zero/null fields (zero resistances, zero enchants, zero apply values)
 7. All file paths in wiki must match the actual `server/` repo structure exactly
+8. Wiki stop/start commands: always `python stop.py` / `python start.py` run from `server/` root
 
 ---
 
 ## 6. File Summary
 
-| File | Repo/Branch | Action |
-|------|-------------|--------|
-| `.gitmodules` | master | UPDATE — add server submodule |
-| `wiki/concept-architecture.md` | master | UPDATE |
-| `wiki/start-requirements.md` | master | UPDATE |
-| `wiki/start-server-setup.md` | master | UPDATE |
-| `wiki/start-workflow.md` | master | UPDATE |
-| `wiki/guide-Build-Environment.md` | master | UPDATE |
-| `wiki/guide-Database-Proto.md` | master | UPDATE |
-| `wiki/Home.md` | master | UPDATE |
-| `calculators/items.html` | gh-pages | CREATE |
-| `calculators/mobs.html` | gh-pages | CREATE |
-| `calculators/index.html` | gh-pages | UPDATE |
+| # | File | Repo/Branch | Action |
+|---|------|-------------|--------|
+| 1 | `.gitmodules` | master | UPDATE — add server submodule entry |
+| 2 | `wiki/concept-architecture.md` | master | UPDATE |
+| 3 | `wiki/start-requirements.md` | master | UPDATE |
+| 4 | `wiki/start-server-setup.md` | master | UPDATE |
+| 5 | `wiki/start-workflow.md` | master | UPDATE |
+| 6 | `wiki/guide-Build-Environment.md` | master | UPDATE |
+| 7 | `wiki/guide-Database-Proto.md` | master | UPDATE |
+| 8 | `wiki/Home.md` | master | UPDATE |
+| 9 | `calculators/items.html` | gh-pages | CREATE |
+| 10 | `calculators/mobs.html` | gh-pages | CREATE |
+| 11 | `index.html` | gh-pages | UPDATE |
 
-**Total: 11 files — 1 created (submodule), 7 updated (wiki), 2 created + 1 updated (gh-pages)**
+**Total: 11 files authored — 1 submodule registration, 7 wiki updates, 2 new HTML pages, 1 updated HTML page**
