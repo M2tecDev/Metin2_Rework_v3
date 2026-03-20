@@ -371,7 +371,17 @@ async function init() {
       document.getElementById('tableWrap').style.display = 'block';
       document.getElementById('paginationBar').style.display = 'flex';
       const hashVnum = getHashVnum();
-      if (hashVnum) setTimeout(() => expandRow(hashVnum), 100);
+      if (hashVnum) {
+        setTimeout(() => {
+          // Find which page the target vnum is on
+          const idx = filtered.findIndex(mob => mob.vnum === hashVnum);
+          if (idx >= 0) {
+            currentPage = Math.floor(idx / PAGE_SIZE) + 1;
+            renderTable();
+          }
+          expandRow(hashVnum);
+        }, 100);
+      }
     };
     protoWorker.postMessage(text);
   } catch (e) {
@@ -610,10 +620,10 @@ function buildDetail(mob) {
     links.push(`Drops: <a href="${ITEMS_PAGE}#${mob.drop_item}" class="jump-link">item #${mob.drop_item}</a>`);
   }
   if (mob.resurrection_vnum > 0) {
-    links.push(`Resurrects as: <a href="#${mob.resurrection_vnum}" class="jump-link" onclick="navigateToMob(${mob.resurrection_vnum})">mob #${mob.resurrection_vnum}</a>`);
+    links.push(`Resurrects as: <a href="#${mob.resurrection_vnum}" class="jump-link" onclick="navigateToMob(event, ${mob.resurrection_vnum})">mob #${mob.resurrection_vnum}</a>`);
   }
   if (mob.summon_vnum > 0) {
-    links.push(`Summons: <a href="#${mob.summon_vnum}" class="jump-link" onclick="navigateToMob(${mob.summon_vnum})">mob #${mob.summon_vnum}</a>`);
+    links.push(`Summons: <a href="#${mob.summon_vnum}" class="jump-link" onclick="navigateToMob(event, ${mob.summon_vnum})">mob #${mob.summon_vnum}</a>`);
   }
   if (links.length) {
     left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
@@ -681,9 +691,9 @@ function buildDetail(mob) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function navigateToMob(vnum) {
-  event.preventDefault();
-  event.stopPropagation();
+function navigateToMob(evt, vnum) {
+  evt.preventDefault();
+  evt.stopPropagation();
   // Jump to mob in current filtered list or expand
   const existing = document.querySelector(`tr[data-vnum="${vnum}"]`);
   if (existing) {

@@ -355,7 +355,17 @@ async function init() {
       document.getElementById('tableWrap').style.display = 'block';
       document.getElementById('paginationBar').style.display = 'flex';
       const hashVnum = getHashVnum();
-      if (hashVnum) setTimeout(() => expandRow(hashVnum), 100);
+      if (hashVnum) {
+        setTimeout(() => {
+          // Find which page the target vnum is on
+          const idx = filtered.findIndex(item => item.vnum === hashVnum);
+          if (idx >= 0) {
+            currentPage = Math.floor(idx / PAGE_SIZE) + 1;
+            renderTable();
+          }
+          expandRow(hashVnum);
+        }, 100);
+      }
     };
     protoWorker.postMessage(protoText);
   } catch (e) {
