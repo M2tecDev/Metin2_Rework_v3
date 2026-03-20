@@ -1,5 +1,12 @@
 # Blueprint: Item System
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [What is a vnum?](concept-vnum)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture of the item system across all three repos — from `item_proto` SQL table through server dispatch to Python inventory UI. Use this when adding new item types, modifying attributes, or debugging item-related failures.
 
 **Companion reference:** [topic-Item-System](topic-Item-System) · [guide-Database-Proto](guide-Database-Proto)

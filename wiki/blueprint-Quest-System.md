@@ -1,5 +1,12 @@
 # Blueprint: Quest System
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [Understanding the Quest System](concept-lua-quests)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the Lua-based quest engine — from `.quest` source files through the offline `qc` compiler, the server-side `CQuestManager` coroutine runtime, to the client dialog packets and Python UI. Companion to [Quest System](topic-Quest-System).
 
 ---

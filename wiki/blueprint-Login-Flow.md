@@ -1,5 +1,12 @@
 # Blueprint: Login Flow
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [What is a Packet?](concept-packets)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the complete login sequence — from Python UI credentials entry through encrypted TCP handshake, account DB authentication, TPlayerTable load, to the game phase. Companion to [Login Flow](topic-Login-Flow).
 
 ---

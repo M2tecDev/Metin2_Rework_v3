@@ -1,5 +1,12 @@
 # Blueprint: Map & World System
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [What is a SECTREE?](concept-sectree)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the map and world pipeline — SECTREE spatial partitioning, server attribute map, spawn/regen system, dungeon instancing, warp/portal flow, client terrain rendering, and minimap. Companion to [Map & World System](topic-Map-World-System).
 
 ---
