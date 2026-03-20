@@ -126,8 +126,8 @@ def process(script: Path) -> None:
             skipped += 1
             return
 
-        img     = Image.open(atlas_path)
-        cropped = img.crop((sx, sy, sx + sw, sy + sh))
+        with Image.open(atlas_path) as img:
+            cropped = img.crop((sx, sy, sx + sw, sy + sh))
         ICONS_OUT.mkdir(parents=True, exist_ok=True)
         cropped.save(ICONS_OUT / f'{vnum}.png')
         generated += 1
