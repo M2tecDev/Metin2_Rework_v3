@@ -1,86 +1,85 @@
 # Requirements & Prerequisites
 
 > **Who is this for:** Anyone about to set up the server or build the client for the first time.
-> **Prerequisites:** Read [start-overview](start-overview) first so you understand what each part is.
-> **What you will learn:** Exactly what hardware, software, and skills you need before you start.
+> **Prerequisites:** Read [Overview & Getting Started](start-overview) first so you understand what each part is.
+> **What you will learn:** What OS, software, and skills you need — and where to find the exact setup steps.
 
 ## Overview
 
-This page covers two independent setup tracks: running the server (Linux) and building the client (Windows). You do not need to do both — many contributors only work on one side. Read the section that applies to you.
+Two independent tracks. You do not need both — most contributors only work on one side.
+
+| Track | OS | Full guide |
+|-------|----|------------|
+| **Run / build the server** | Linux, FreeBSD, or Windows | [Build Environment](guide-Build-Environment) |
+| **Build the client** | Windows only | [Build Environment](guide-Build-Environment) |
 
 ---
 
-## Section A — Running the Server (Linux)
+## Section A — Server (Linux / FreeBSD / Windows)
 
-### Recommended OS
+The server builds with CMake + GCC, Clang, or MSVC and runs on all three platforms. Linux is the most common production target; FreeBSD and Windows are fully supported.
 
-Ubuntu 22.04 LTS or later. The build system and dependencies are tested against this. Other Debian-based distributions will likely work; other Linux distributions may require adjustments.
+### What you need
 
-### Required Software
+| Tool | Version | Notes |
+|------|---------|-------|
+| CMake | ≥ 3.15 | `apt install cmake` on Debian/Ubuntu |
+| GCC or Clang | GCC ≥ 12 / Clang ≥ 15 | Must support C++20 |
+| MariaDB dev headers | — | `apt install libmariadb-dev` — OR use the bundled connector in `server-src/vendor/` |
 
-| Package | Purpose |
-|---------|---------|
-| `cmake` (3.16+) | Build system |
-| `gcc` / `g++` (11+) | C++ compiler |
-| `make` | Build automation |
-| `libmariadb-dev` | MariaDB client library |
-| `mariadb-server` | Database server |
-| `libsodium-dev` | Encryption (X25519 / XSalsa20) |
-| `liblua5.0-dev` | Lua 5.0 interpreter (embedded in server) |
-| `python2.7` | Used by the qc quest compiler |
-| `git` | Source control |
+**Bundled — no manual install needed** (already in `server-src/vendor/`):
+`mariadb-connector-c`, `libsodium`, `spdlog`
 
-> For the complete installation commands, refer to the **server-src README**:
-> https://github.com/d1str4ught/m2dev-server-src/tree/21519899adf6ade7937d71b1d9d886d502762a3b?tab=readme-ov-file#installationconfiguration
-
-### Minimum Recommended Hardware
+### Minimum hardware (for running the server)
 
 | Resource | Minimum | Notes |
 |----------|---------|-------|
-| RAM | 4 GB | 2 GB for OS + 1 GB per server process |
-| CPU | 2 cores | game process is single-threaded; more cores help db and MariaDB |
+| RAM | 4 GB | ~1 GB per server process + OS overhead |
+| CPU | 2 cores | `game` is single-threaded; extra cores help `db` and MariaDB |
 | Disk | 20 GB | OS + build artifacts + game data |
-| Network | LAN or public IP | Clients need to reach the game port (default 11011) |
+| Network | LAN or public IP | Clients connect to game port (default 11011) |
+
+> **Full build steps, CMake flags, and platform-specific notes → [Guide: Build Environment](guide-Build-Environment)**
 
 ---
 
-## Section B — Building the Client (Windows)
+## Section B — Client (Windows only)
 
-### Required Software
+The client is a 32-bit Windows executable built with MSVC. It embeds Python 2.7 (32-bit) and requires the legacy DirectX 9 SDK.
 
-| Software | Version | Notes |
-|----------|---------|-------|
-| Visual Studio | 2022 | Community edition is sufficient |
-| VS workload | "Desktop development with C++" | Required MSVC components |
-| Python | 2.7, 32-bit | Must be 32-bit — the client embeds 32-bit Python |
-| DirectX SDK | June 2010 | Legacy SDK required by EterLib |
-| Granny2 | SDK matching the project | Animation library — see client-src README for source |
-| CMake | 3.20+ | Can use the version bundled with Visual Studio |
-| Git | Any recent | Source control |
+### What you need
 
-> For the complete build steps including exact CMake invocations, refer to the **client-src README**:
-> https://github.com/d1str4ught/m2dev-client-src/tree/a7555110828182f20d0a0306aac0552142cf0039#installationconfiguration
+| Tool | Version | Notes |
+|------|---------|-------|
+| Visual Studio | 2022 | "Desktop development with C++" workload |
+| CMake | ≥ 3.19 | Bundled with VS2022 |
+| Python | 2.7, **32-bit** | Must be 32-bit — the client embeds it statically |
+| DirectX SDK | June 2010 | For D3D9 headers; set `DXSDK_DIR` env variable |
+| Granny SDK | 2.x | RAD Game Tools; `.gr2` runtime — already in `vendor/` |
 
-> For configuring the Python scripts and assets, refer to the **client-bin README**:
-> https://github.com/d1str4ught/m2dev-client/tree/ecef2dcdb89f5d0344677b2902ad175809b70f52?tab=readme-ov-file#installationconfiguration
+**Bundled — no manual install needed** (already in `client-src/vendor/`):
+`libsodium`, `freetype`, `lzo`, `zstd`, `DirectXMath`, `mio`
+
+> **Full build steps, CMake flags, and ASan setup → [Guide: Build Environment](guide-Build-Environment)**
 
 ---
 
-## Skills Reference Table
+## Skills Reference
 
-Use this table to understand which skills you need for which type of work. You do not need all of them — focus on what you are actually trying to do.
+Use this to understand what you actually need to know — not all skills are needed for all tasks.
 
-| Task | C++ | Python | SQL | Linux | Networking |
-|------|-----|--------|-----|-------|------------|
+| Task | C++ | Python | SQL | Linux/BSD | Networking |
+|------|-----|--------|-----|-----------|------------|
 | Run the server | — | — | ✓ (basic) | ✓ | — |
+| Build the server from source | ✓ | — | — | ✓ | — |
 | Build the client from source | ✓ | — | — | — | — |
-| Add or modify items | — | — | ✓ | — | — |
+| Add or modify items/mobs | — | — | ✓ | — | — |
 | Write quest scripts | — | ✓ (basic) | — | — | — |
 | Modify the Python UI | — | ✓ | — | — | — |
 | Add a new packet/feature | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Debug server crashes | ✓ | — | — | ✓ | — |
 
-**Legend:** ✓ = required, ✓ (basic) = only basic knowledge needed, — = not required
+**Legend:** ✓ = required, ✓ (basic) = basics only, — = not needed
 
 ---
 
@@ -88,14 +87,17 @@ Use this table to understand which skills you need for which type of work. You d
 
 | Mistake | Symptom | Fix |
 |---------|---------|-----|
-| Installing 64-bit Python 2.7 | Client build fails with linker errors | Download the **32-bit** Python 2.7 installer from python.org |
-| Missing DirectX SDK | Build fails with `d3d9.h not found` | Install DirectX SDK June 2010 separately — it is not included in modern Windows SDK |
-| Ubuntu version older than 20.04 | `libsodium` or `cmake` version too old | Upgrade OS or manually build newer versions |
-| Not reading the README before asking | Setup fails at an unexpected step | The READMEs cover edge cases and exact commands — read them fully |
+| Installing 64-bit Python 2.7 | Client build fails with linker errors | Download the **32-bit** Python 2.7 installer |
+| Missing DirectX SDK | `d3d9.h not found` | Install DirectX SDK June 2010, set `DXSDK_DIR` |
+| GCC version too old | `C++20 features not supported` | Upgrade to GCC ≥ 12 or Clang ≥ 15 |
+| Missing MariaDB headers | CMake error during server configure | `apt install libmariadb-dev` or let CMake use the bundled connector |
+
+> More build-specific errors → [Guide: Build Environment — Troubleshooting](guide-Build-Environment)
 
 ---
 
 ## Next Steps
 
-- [Setting Up the Server](start-server-setup) — startup order, verification, and first-run checklist
+- [Build Environment](guide-Build-Environment) — complete CMake setup for server and client
+- [Setting Up the Server](start-server-setup) — startup order, verification, first-run checklist
 - [Setting Up the Client](start-client-setup) — connecting the client to your server
