@@ -15,6 +15,19 @@ Two independent tracks. You do not need both — most contributors only work on 
 
 ---
 
+## Repository Roles at a Glance
+
+| Repo | Purpose | When you need it |
+|------|---------|-----------------|
+| `server-src` | C++ source — compile to get `game`, `db`, `qc` binaries | When changing server C++ code |
+| `server` | Runtime environment — configs, SQL, management scripts | Always: this is where you run the server |
+| `client-src` | C++ source — compile to get `Metin2.exe` | When changing client C++ code |
+| `client-bin` | Runtime assets — Python UI scripts, data files, textures | Always: packs go here |
+
+> **server vs server-src:** You only need `server-src` if you're changing C++ code. Most developers only ever touch `server/` (configs, quests, SQL) and `client-bin/` (Python UI). Think of `server-src` as the factory and `server/` as the warehouse.
+
+---
+
 ## Section A — Server (Linux / FreeBSD / Windows)
 
 The server builds with CMake + GCC, Clang, or MSVC and runs on all three platforms. Linux is the most common production target; FreeBSD and Windows are fully supported.
@@ -26,6 +39,7 @@ The server builds with CMake + GCC, Clang, or MSVC and runs on all three platfor
 | CMake | ≥ 3.15 | `apt install cmake` on Debian/Ubuntu |
 | GCC or Clang | GCC ≥ 12 / Clang ≥ 15 | Must support C++20 |
 | MariaDB dev headers | — | `apt install libmariadb-dev` — OR use the bundled connector in `server-src/vendor/` |
+| `python3` | 3.6+ | Required for server management scripts: `start.py`, `stop.py`, `install.py`, `clear.py` |
 
 **Bundled — no manual install needed** (already in `server-src/vendor/`):
 `mariadb-connector-c`, `libsodium`, `spdlog`

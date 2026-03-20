@@ -29,9 +29,10 @@ You understand server/client architecture and want the deep technical reference 
 
 | Repo | Description |
 |------|-------------|
+| **server** | Runtime server files — configs (`share/conf/`), SQL schema (`sql/`), management scripts (`start.py`, `stop.py`, `install.py`), compiled binary destination (`share/bin/`) |
+| **server-src** | C++ server source — `game`, `db`, shared libraries |
 | **client-src** | C++ client source — all libraries compiled into `Metin2.exe` |
 | **client-bin** | Runtime assets — Python scripts (`root/`, `uiscript/`), data files |
-| **server-src** | C++ server source — `game`, `db`, shared libraries |
 
 ---
 

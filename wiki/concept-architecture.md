@@ -68,6 +68,42 @@ Metin2 Rework v3 consists of five layers that form a chain from the player's key
 
 ---
 
+## The Four Repositories
+
+Metin2 Rework v3 is split across four repositories. Understanding which repo holds what prevents confusion when you need to find or change something.
+
+| Repo | Language | Role | Key contents |
+|------|----------|------|--------------|
+| `server-src` | C++ | Build source for server binaries | `game/`, `db/`, `qc/`, `common/`, `vendor/` |
+| `server` | Python + config | Runtime environment | `share/bin/`, `share/conf/`, `sql/`, `start.py` |
+| `client-src` | C++ | Build source for Metin2.exe | `UserInterface/`, `GameLib/`, `EterLib/`, `vendor/` |
+| `client-bin` | Python + assets | Runtime client files | `root/`, `uiscript/`, `assets/` |
+
+### Why are server/ and server-src/ separate?
+
+**Source code vs runtime.** You compile `server-src` once when the C++ changes. The resulting binaries (`game`, `db`, `qc`) are copied into `server/share/bin/`. The `server/` repo holds configs, SQL schema, and management scripts that change independently of the C++ source — a config tweak does not require a recompile, and the management scripts evolve on their own schedule.
+
+### Full 4-repo relationship
+
+```
+server-src/ ──(compile)──► copy game+db+qc ──► server/share/bin/
+(C++ source)                                    server/share/locale/english/quest/
+                                                        │
+                                               python install.py  (once)
+                                                        │
+                                               python start.py
+                                                        │
+                                          game + db processes running
+                                                        │
+client-src/ ──(compile)──► Metin2.exe              TCP │
+(C++ source)                    │                      │
+                                └──────────────────────┘
+client-bin/ ──(pack.py)──► packed .epk assets loaded by Metin2.exe
+(Python/assets)
+```
+
+---
+
 ## Why Two Server Processes?
 
 The server is split into **game** and **db**. This is a deliberate design decision, not an accident.
@@ -159,15 +195,19 @@ A waiter crash means customers have to reconnect and re-order, but the kitchen s
 
 | What | Where |
 |------|-------|
-| Game process logs (info) | `game/syslog` |
-| Game process errors | `game/syserr` |
-| DB process logs (info) | `db/syslog` |
-| DB process errors | `db/syserr` |
-| Game configuration | `game/conf.txt` |
-| DB configuration | `db/db.conf` |
-| Map data | `game/data/map/<mapname>/` |
-| Quest scripts (source) | `game/quest/` |
-| Quest scripts (compiled) | `game/object/` |
+| Game process logs (info) | `server/<channel>/syslog` |
+| Game process errors | `server/<channel>/syserr` |
+| DB process logs (info) | `server/db/syslog` |
+| DB process errors | `server/db/syserr` |
+| Game configuration | `server/share/conf/conf.txt` |
+| DB configuration | `server/share/conf/db.conf` |
+| Item definitions | `server/share/conf/item_proto.txt` |
+| Mob definitions | `server/share/conf/mob_proto.txt` |
+| Other game config | `server/share/conf/*.txt` |
+| Server SQL schema | `server/sql/` |
+| Compiled binaries | `server/share/bin/` |
+| Compiled quests | `server/share/locale/english/quest/` |
+| Map data | `server/share/data/map/<mapname>/` |
 | Client logs | `syserr.txt` (in client root dir) |
 | Client Python scripts | `root/`, `uiscript/` (in client-bin) |
 | Client packed assets | `pack/` (in client root dir) |

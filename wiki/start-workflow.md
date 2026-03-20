@@ -19,9 +19,9 @@ Find the row matching what you changed, then follow each column from left to rig
 | `item_proto` SQL | — | — | — | ✓ | — | — | — | Reload proto; some builds support `/reload item_proto` |
 | `mob_proto` SQL | — | — | — | ✓ | — | — | — | |
 | `regen.txt` | — | — | — | ✓ | — | — | — | Only game reads regen at startup |
-| `.quest` source file | ✓ | — | — | ✓ | — | — | — | Must compile with `qc` first; output to `game/object/` |
-| `questmanager` / questlua C++ | — | ✓ | — | ✓ | — | — | — | |
-| Other C++ server code (`char`, `battle`, etc.) | — | ✓ | — | ✓ | — | — | — | |
+| `.quest` source file | ✓ | — | — | ✓ | — | — | — | `cd server/share/locale/english/quest/` first, then `python make.py` — cwd is required (make.py uses relative paths) |
+| `questmanager` / questlua C++ | — | ✓ | — | ✓ | — | — | — | Compile in `server-src` → copy binary to `server/share/bin/` → `python stop.py` → `python start.py` (from `server/` root) |
+| Other C++ server code (`char`, `battle`, etc.) | — | ✓ | — | ✓ | — | — | — | Compile in `server-src` → copy binary to `server/share/bin/` → `python stop.py` → `python start.py` (from `server/` root) |
 | `packet_headers.h` | — | ✓ | ✓ | ✓ | ✓ | — | ✓ | Both sides must agree on header values |
 | `tables.h` or `length.h` | — | ✓ | ✓ | ✓ | ✓ | — | ✓ | Shared struct sizes — full rebuild required |
 | C++ client code (`UserInterface/`) | — | — | — | — | ✓ | — | ✓ | |
@@ -33,6 +33,10 @@ Find the row matching what you changed, then follow each column from left to rig
 | `mob_proto` binary (client copy) | — | — | — | ✓ | — | ✓ | ✓ | Proto sync |
 | `conf.txt` (game config) | — | — | — | ✓ | — | — | — | Game reads conf.txt at startup |
 | `db.conf` | — | — | ✓ | — | — | — | — | db reads its config at startup |
+| `server/share/conf/*.txt` config files | — | — | — | ✓ | — | — | — | Game reads conf at startup; restart game channel only |
+| Management scripts (`start.py`, `stop.py`, etc.) | — | — | — | — | — | — | — | Script changes take effect on next invocation |
+
+> **Multi-channel note:** `start.py` starts all configured game channels automatically — you do not need to start each `game` process individually. Channel configuration lives in `server/channels.py`.
 
 ---
 
@@ -41,28 +45,24 @@ Find the row matching what you changed, then follow each column from left to rig
 When you need to restart both server processes (e.g., after a packet change or schema change), follow this exact order:
 
 ```
-1. Stop game process
-   └─ Reason: game must flush its data cache to db before db stops
+1. cd server/ && python stop.py
+   └─ Stops all game channels, then db, in the correct order
 
-2. Stop db process
-   └─ Reason: db must flush to MariaDB before MariaDB stops
+2. (optional) Stop MariaDB if you are making schema changes
 
-3. (optional) Stop MariaDB if you are making schema changes
+3. Apply your changes
 
-4. Apply your changes
+4. Start MariaDB (if stopped)
 
-5. Start MariaDB (if stopped)
+5. cd server/ && python start.py
+   └─ Starts db, then all game channels, in the correct order
+   └─ Wait for: "boot sequence done" in db log
+   └─ Wait for: "SYSTEM: boot done" in game log
 
-6. Start db process
-   └─ Wait for: "boot sequence done" in db/syslog
-
-7. Start game process
-   └─ Wait for: "SYSTEM: boot done" in game/syslog
-
-8. Repack client assets (if needed)
+6. Repack client assets (if needed)
    └─ Run: python pack.py
 
-9. Restart the client
+7. Restart the client
 ```
 
 **Never start game before db is ready.** The game process connects to db during its own boot sequence. If db is not listening yet, game will fail to start.

@@ -13,6 +13,92 @@ The server consists of two processes — `db` and `game` — that must be starte
 
 ---
 
+## First-Time Setup (Do Once)
+
+These steps are required the first time you set up the server. After that, you only need [start.py and stop.py](#starting-and-stopping-the-server).
+
+> For the complete installation and configuration steps, refer to the **server README**:
+> https://github.com/d1str4ught/m2dev-server#installationconfiguration
+
+### Step 0 — Place Compiled Binaries
+
+After building `server-src`, copy the output binaries into the `server/` runtime repo.
+
+**Linux / FreeBSD:**
+```bash
+# From the repo root
+cp server-src/build/_install/bin/game  server/share/bin/
+cp server-src/build/_install/bin/db    server/share/bin/
+cp server-src/build/_install/bin/qc    server/share/bin/
+cp server-src/build/_install/bin/qc    server/share/locale/english/quest/
+```
+
+**Windows:**
+```powershell
+copy server-src\build\_install\bin\game.exe  server\share\bin\
+copy server-src\build\_install\bin\db.exe    server\share\bin\
+copy server-src\build\_install\bin\qc.exe    server\share\bin\
+copy server-src\build\_install\bin\qc.exe    server\share\locale\english\quest\
+```
+
+`qc` goes in two places: `share/bin/` (for PATH access) and `share/locale/english/quest/` (because `make.py` calls it from that directory).
+
+---
+
+### Step 0b — Import the Database Schema
+
+Create all 5 required databases and import the SQL schema files from `server/sql/`:
+
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS account;"
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS common;"
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS hotbackup;"
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS log;"
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS player;"
+
+mysql -u root -p account  < server/sql/account.sql
+mysql -u root -p common   < server/sql/common.sql
+mysql -u root -p log      < server/sql/log.sql
+mysql -u root -p player   < server/sql/player.sql
+```
+
+> **hotbackup** is intentionally empty — it must exist but has no SQL schema to import. The server uses it for backup rotation.
+
+---
+
+### Step 0c — Compile the Quest Scripts
+
+Quest scripts must be compiled from inside the quest directory. The `make.py` script uses relative paths — running it from the wrong directory will fail silently or produce wrong output.
+
+```bash
+# MUST be run from inside the quest directory
+cd server/share/locale/english/quest/
+python make.py
+cd -   # back to repo root
+```
+
+**Why the cwd matters:** `make.py` calls `qc` using a path relative to `./` and reads `.quest` source files from the current directory. If you run it from `server/` or the repo root, it cannot find the source files.
+
+---
+
+### Step 0d — Run install.py (Once)
+
+After placing binaries and importing SQL, run the one-time setup script from the `server/` root:
+
+```bash
+cd server/
+python install.py
+cd -
+```
+
+`install.py` creates the channel directories, sets up `share/` symlinks so each channel sees the same config files, and prepares the runtime layout for `start.py`.
+
+---
+
+> **clear.py:** During development you can run `python server/clear.py` at any time to delete all log files and core dumps from channel directories. Safe to run between restarts when iterating on changes.
+
+---
+
 ## The Correct Startup Order
 
 ```
@@ -22,6 +108,14 @@ Step 2: Start the db process
         ↓  (wait for "boot sequence done" in db/syslog)
 Step 3: Start the game process
 ```
+
+> **Using the management scripts:** Instead of starting `db` and `game` manually, use:
+> ```bash
+> cd server/
+> python start.py   # starts all configured channels + db
+> python stop.py    # stops all channels + db (safe shutdown order)
+> ```
+> `start.py` handles the startup order, channel count, and `db` automatically. `stop.py` shuts down in the correct order (game first, then db). See the [server README](https://github.com/d1str4ught/m2dev-server#installationconfiguration) for channel configuration.
 
 **Why this order matters:**
 

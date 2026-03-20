@@ -167,6 +167,51 @@ Note: The server is **64-bit** on Windows (`-A x64`), unlike the client which is
 
 ---
 
+## Distributing Your Build
+
+After a successful build, copy the compiled binaries from the build output into the `server/` runtime repo. The server management scripts (`start.py`, `stop.py`) look for binaries in `server/share/bin/`.
+
+### Linux / FreeBSD
+
+```bash
+# After: cmake --install server-src/build
+cp server-src/build/_install/bin/game  server/share/bin/
+cp server-src/build/_install/bin/db    server/share/bin/
+cp server-src/build/_install/bin/qc    server/share/bin/
+# qc also goes in the quest directory (make.py calls it from there)
+cp server-src/build/_install/bin/qc    server/share/locale/english/quest/
+```
+
+### Windows
+
+```powershell
+# After: cmake --build server-src/build --config RelWithDebInfo
+copy server-src\build\RelWithDebInfo\game.exe  server\share\bin\
+copy server-src\build\RelWithDebInfo\db.exe    server\share\bin\
+copy server-src\build\RelWithDebInfo\qc.exe    server\share\bin\
+copy server-src\build\RelWithDebInfo\qc.exe    server\share\locale\english\quest\
+```
+
+### After Copying
+
+**First time ever:**
+```bash
+cd server/
+python install.py   # creates channel dirs + share/ symlinks
+python start.py     # starts db + all game channels
+```
+
+**Subsequent restarts:**
+```bash
+cd server/
+python stop.py      # safe shutdown
+python start.py     # restart with new binaries
+```
+
+> **Full server setup and configuration → [server README](https://github.com/d1str4ught/m2dev-server#installationconfiguration)**
+
+---
+
 ## Version Tagging
 
 The server CMake build derives a version string from git at configure time:

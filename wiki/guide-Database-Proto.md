@@ -62,12 +62,12 @@ Export the SQL table to the text proto format that the `db` process reads:
 
 ```bash
 # In the server tools directory
-./proto_exporter --table item_proto --output /srv/metin2/share/item_proto.txt
+./proto_exporter --table item_proto --output server/share/conf/item_proto.txt
 ```
 
 Or export directly from MySQL:
 ```sql
-SELECT * FROM item_proto INTO OUTFILE '/tmp/item_proto.txt'
+SELECT * FROM item_proto INTO OUTFILE 'server/share/conf/item_proto.txt'
 FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
 ```
 
@@ -98,7 +98,8 @@ client-bin/assets/item_proto
 The `db` process caches proto tables at startup. After changing `item_proto.txt`, restart `db` (and then `game`, since game receives proto at connect):
 
 ```bash
-./stop.sh && ./start.sh
+# From the server/ root directory
+python stop.py && python start.py
 ```
 
 ---
@@ -149,7 +150,7 @@ INSERT INTO mob_proto (
 
 ### Step 2 — Export and Pack
 
-Same process as item_proto — export to `mob_proto.txt`, pack to binary, place in `client-bin/assets/mob_proto`.
+Same process as item_proto — export to `server/share/conf/mob_proto.txt`, pack to binary, place in `client-bin/assets/mob_proto`.
 
 ### Step 3 — Spawn the Mob
 
@@ -233,3 +234,9 @@ Use this checklist every time you add or modify a proto entry:
 | `src/db/ClientManagerBoot.cpp` | server-src | `InitializeTables()` — boots proto into memory and broadcasts via DG_BOOT |
 | `assets/item_proto` | client-bin | Client-side binary item proto file |
 | `assets/mob_proto` | client-bin | Client-side binary mob proto file |
+| `share/conf/item_proto.txt` | server | Tab-separated item definitions — read by `db` at startup |
+| `share/conf/mob_proto.txt` | server | Tab-separated mob definitions — read by `db` at startup |
+| `sql/account.sql` | server | Account database schema |
+| `sql/common.sql` | server | Common database schema |
+| `sql/log.sql` | server | Log database schema |
+| `sql/player.sql` | server | Player database schema |
