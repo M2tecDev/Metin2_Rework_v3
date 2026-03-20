@@ -88,7 +88,12 @@ def process(script: Path) -> None:
     png_path = asset_path.with_suffix('.png')
     if png_path.exists():
         ICONS_OUT.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(png_path, ICONS_OUT / f'{vnum}.png')
+        out = ICONS_OUT / f'{vnum}.png'
+        if out.exists():
+            print(f'  WARN vnum={vnum}: icon already exists, skipping duplicate from {script.name}')
+            skipped += 1
+            return
+        shutil.copy2(png_path, out)
         generated += 1
         return
 
@@ -120,6 +125,10 @@ def process(script: Path) -> None:
             return
 
         sx, sy, sw, sh = int(parts[0]), int(parts[1]), int(parts[2]), int(parts[3])
+        if sx < 0 or sy < 0 or sw <= 0 or sh <= 0:
+            print(f'  SKIP vnum={vnum}: invalid crop coords ({sx},{sy},{sw},{sh})')
+            skipped += 1
+            return
 
         if not atlas_path.exists():
             print(f'SKIP vnum={vnum}: atlas not found at {atlas_path}')
@@ -127,9 +136,17 @@ def process(script: Path) -> None:
             return
 
         with Image.open(atlas_path) as img:
+            aw, ah = img.size
+            if sx + sw > aw or sy + sh > ah:
+                print(f'  WARN vnum={vnum}: crop ({sx},{sy},{sw},{sh}) exceeds atlas {aw}x{ah}, clipping')
             cropped = img.crop((sx, sy, sx + sw, sy + sh))
         ICONS_OUT.mkdir(parents=True, exist_ok=True)
-        cropped.save(ICONS_OUT / f'{vnum}.png')
+        out = ICONS_OUT / f'{vnum}.png'
+        if out.exists():
+            print(f'  WARN vnum={vnum}: icon already exists, skipping duplicate from {script.name}')
+            skipped += 1
+            return
+        cropped.save(out)
         generated += 1
 
     except Exception as e:
