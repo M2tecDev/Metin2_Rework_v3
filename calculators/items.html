@@ -114,6 +114,25 @@
     }
     .error-box a { color: var(--info); }
     .skip-note { font-size: .75rem; color: var(--text-muted); margin-top: .5rem; text-align: right; }
+
+    /* Icon column */
+    .icon-col { width: 44px; text-align: center; padding: .25rem .4rem; }
+    .icon-col img { display: block; margin: auto; border-radius: 2px; }
+    .icon-fallback {
+      width: 32px; height: 32px; display: flex; align-items: center;
+      justify-content: center; background: var(--surface-alt);
+      border: 1px solid var(--border); border-radius: 2px;
+      font-size: .72rem; font-weight: 700; color: var(--text-muted); margin: auto;
+    }
+    /* Pagination bar */
+    .pagination-bar {
+      display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+      padding: .6rem 0; border-top: 1px solid var(--border); margin-top: .25rem;
+    }
+    .pagination-bar button { min-width: 80px; }
+    .pagination-bar button:disabled { opacity: .4; cursor: not-allowed; }
+    .pagination-bar .pg-label { font-size: .82rem; color: var(--text-muted); }
+    .pagination-bar select.pg-jump { min-width: 110px; }
   </style>
 </head>
 <body>
@@ -143,8 +162,9 @@
 
   <!-- Toolbar -->
   <div class="toolbar">
-    <input type="text" id="searchInput" placeholder="Search by name…" oninput="applyFilters()" />
-    <select id="typeFilter" onchange="applyFilters()">
+    <input type="text" id="searchInput" placeholder="Search by name…"
+           oninput="clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentPage=1;applyFilters();},300)" />
+    <select id="typeFilter" onchange="currentPage=1;applyFilters()">
       <option value="">All Types</option>
     </select>
     <button class="toggle-btn" id="btnBonuses" onclick="toggleFilter('bonuses')">Has Bonuses</button>
@@ -168,6 +188,7 @@
     <table class="data-table" id="itemTable">
       <thead>
         <tr>
+          <th style="width:44px">Icon</th>
           <th onclick="sortBy('vnum')"    data-col="vnum">vnum    <span class="sort-icon">▲</span></th>
           <th onclick="sortBy('name')"    data-col="name">Name    <span class="sort-icon">▲</span></th>
           <th onclick="sortBy('type')"    data-col="type">Type    <span class="sort-icon">▲</span></th>
@@ -178,13 +199,20 @@
       <tbody id="tableBody"></tbody>
     </table>
   </div>
+  <div class="pagination-bar" id="paginationBar" style="display:none">
+    <button class="pg-prev" onclick="goPage(-1)">← Prev</button>
+    <span class="pg-label">Page 1 of 1</span>
+    <button class="pg-next" onclick="goPage(1)">Next →</button>
+    <select class="pg-jump" onchange="jumpToPage(this.value)" title="Jump to page"></select>
+  </div>
   <div class="skip-note" id="globalSkipNote" style="margin-top:.4rem"></div>
 </div>
 
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────────
-const ITEM_PROTO_URL  = 'https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/item_proto.txt';
-const ITEMDESC_URL    = 'https://raw.githubusercontent.com/d1str4ught/m2dev-client/main/assets/locale/locale/en/itemdesc.txt';
+const ITEM_PROTO_URL  = 'https://raw.githubusercontent.com/M2tecDev/Metin2_Rework_v3/main/data/item_proto.txt';
+const ITEMDESC_URL    = 'https://raw.githubusercontent.com/M2tecDev/Metin2_Rework_v3/main/data/itemdesc.txt';
+const ICON_BASE_URL   = 'https://raw.githubusercontent.com/M2tecDev/Metin2_Rework_v3/main/data/icons/';
 
 const ITEM_TYPES = {
   0:'None',1:'Weapon',2:'Armor',3:'Consumable',4:'Auto-Use',
@@ -235,11 +263,73 @@ let activeFilters = { bonuses: false, quest: false };
 let expandedVnum = null;
 let skipCount = 0;
 
+// Pagination state
+let currentPage = 1;
+const PAGE_SIZE = 50;
+// Detail panel cache — built lazily on first click
+const detailCache = new Map();
+// Search debounce timer
+let searchTimer = null;
+
 // URL hash for deep-linking
 function getHashVnum() {
   const h = location.hash.replace('#','');
   return h ? parseInt(h, 10) : null;
 }
+
+// ── Web Worker (inline Blob URL — no separate file needed) ────────────────────
+const WORKER_CODE = `
+self.onmessage = function(e) {
+  const lines = e.data.split('\\n');
+  const result = [];
+  let skipCount = 0;
+  for (const line of lines) {
+    if (!line.trim() || line.startsWith('#')) continue;
+    const cols = line.split('\\t');
+    if (cols.length < 12) { skipCount++; continue; }
+    try {
+      const item = {
+        vnum:       parseInt(cols[0],  10),
+        name:       cols[1]?.trim() || '',
+        type:       parseInt(cols[2],  10) || 0,
+        subtype:    parseInt(cols[3],  10) || 0,
+        weight:     parseInt(cols[4],  10) || 0,
+        size:       parseInt(cols[5],  10) || 0,
+        antiflag:   parseInt(cols[6],  10) || 0,
+        flag:       parseInt(cols[7],  10) || 0,
+        wearflag:   parseInt(cols[8],  10) || 0,
+        immuneflag: parseInt(cols[9],  10) || 0,
+        gold:       parseInt(cols[10], 10) || 0,
+        buy_price:  parseInt(cols[11], 10) || 0,
+        limittype0: parseInt(cols[12], 10) || 0,
+        limitval0:  parseInt(cols[13], 10) || 0,
+        limittype1: parseInt(cols[14], 10) || 0,
+        limitval1:  parseInt(cols[15], 10) || 0,
+        applytype0: parseInt(cols[16], 10) || 0,
+        applyval0:  parseInt(cols[17], 10) || 0,
+        applytype1: parseInt(cols[18], 10) || 0,
+        applyval1:  parseInt(cols[19], 10) || 0,
+        applytype2: parseInt(cols[20], 10) || 0,
+        applyval2:  parseInt(cols[21], 10) || 0,
+        value0:     parseInt(cols[22], 10) || 0,
+        value1:     parseInt(cols[23], 10) || 0,
+        value2:     parseInt(cols[24], 10) || 0,
+        value3:     parseInt(cols[25], 10) || 0,
+        value4:     parseInt(cols[26], 10) || 0,
+        value5:     parseInt(cols[27], 10) || 0,
+        socket_pct: parseInt(cols[28], 10) || 0,
+        addon_type: parseInt(cols[29], 10) || 0,
+      };
+      if (!isNaN(item.vnum) && item.vnum > 0) result.push(item);
+      else skipCount++;
+    } catch(err) { skipCount++; }
+  }
+  self.postMessage({ items: result, skipCount });
+};
+`;
+const protoWorker = new Worker(URL.createObjectURL(
+  new Blob([WORKER_CODE], { type: 'text/javascript' })
+));
 
 // ── Fetch & Parse ─────────────────────────────────────────────────────────────
 async function init() {
@@ -249,20 +339,32 @@ async function init() {
       fetch(ITEMDESC_URL).then(r => r.ok ? r.text() : '').catch(() => '')
     ]);
     parseDesc(descText);
-    parseProto(protoText);
-    buildTypeFilter();
-    applyFilters();
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('tableWrap').style.display = 'block';
-    const hashVnum = getHashVnum();
-    if (hashVnum) {
-      setTimeout(() => expandRow(hashVnum), 100);
-    }
+    protoWorker.onmessage = function(e) {
+      allItems = e.data.items;
+      skipCount = e.data.skipCount;
+      if (skipCount > 0) {
+        document.getElementById('globalSkipNote').textContent =
+          `${skipCount} lines skipped due to parse errors`;
+      }
+      document.getElementById('statusText').innerHTML =
+        `Loaded <strong>${allItems.length}</strong> items — ` +
+        `<a href="${ITEM_PROTO_URL}" target="_blank" class="load-link">item_proto.txt</a>`;
+      buildTypeFilter();
+      applyFilters();
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('tableWrap').style.display = 'block';
+      document.getElementById('paginationBar').style.display = 'flex';
+      const hashVnum = getHashVnum();
+      if (hashVnum) setTimeout(() => expandRow(hashVnum), 100);
+    };
+    protoWorker.postMessage(protoText);
   } catch (e) {
     document.getElementById('spinner').style.display = 'none';
     const eb = document.getElementById('errorBox');
     eb.style.display = 'block';
-    eb.innerHTML = `Failed to load item data. <br>URL: <a href="${ITEM_PROTO_URL}" target="_blank">${ITEM_PROTO_URL}</a><br><small>${e}</small>`;
+    eb.innerHTML = `Failed to load item data.<br>` +
+      `URL: <a href="${ITEM_PROTO_URL}" target="_blank">${ITEM_PROTO_URL}</a><br>` +
+      `<small>${e}</small>`;
   }
 }
 
@@ -272,55 +374,6 @@ function parseDesc(text) {
     const m = line.match(/^(\d+)\t(.+)/);
     if (m) descs.set(parseInt(m[1], 10), m[2].trim());
   }
-}
-
-function parseProto(text) {
-  skipCount = 0;
-  const lines = text.split('\n');
-  for (const line of lines) {
-    if (!line.trim() || line.startsWith('#')) continue;
-    const cols = line.split('\t');
-    if (cols.length < 12) { skipCount++; continue; }
-    try {
-      const item = {
-        vnum:        parseInt(cols[0],  10),
-        name:        cols[1]?.trim() || '',
-        type:        parseInt(cols[2],  10) || 0,
-        subtype:     parseInt(cols[3],  10) || 0,
-        weight:      parseInt(cols[4],  10) || 0,
-        size:        parseInt(cols[5],  10) || 0,
-        antiflag:    parseInt(cols[6],  10) || 0,
-        flag:        parseInt(cols[7],  10) || 0,
-        wearflag:    parseInt(cols[8],  10) || 0,
-        immuneflag:  parseInt(cols[9],  10) || 0,
-        gold:        parseInt(cols[10], 10) || 0,
-        buy_price:   parseInt(cols[11], 10) || 0,
-        limittype0:  parseInt(cols[12], 10) || 0,
-        limitval0:   parseInt(cols[13], 10) || 0,
-        limittype1:  parseInt(cols[14], 10) || 0,
-        limitval1:   parseInt(cols[15], 10) || 0,
-        applytype0:  parseInt(cols[16], 10) || 0,
-        applyval0:   parseInt(cols[17], 10) || 0,
-        applytype1:  parseInt(cols[18], 10) || 0,
-        applyval1:   parseInt(cols[19], 10) || 0,
-        applytype2:  parseInt(cols[20], 10) || 0,
-        applyval2:   parseInt(cols[21], 10) || 0,
-        value0:      parseInt(cols[22], 10) || 0,
-        value1:      parseInt(cols[23], 10) || 0,
-        value2:      parseInt(cols[24], 10) || 0,
-        value3:      parseInt(cols[25], 10) || 0,
-        value4:      parseInt(cols[26], 10) || 0,
-        value5:      parseInt(cols[27], 10) || 0,
-        socket_pct:  parseInt(cols[28], 10) || 0,
-        addon_type:  parseInt(cols[29], 10) || 0,
-      };
-      if (!isNaN(item.vnum) && item.vnum > 0) allItems.push(item);
-      else skipCount++;
-    } catch { skipCount++; }
-  }
-  const src = document.getElementById('statusText');
-  src.innerHTML = `Loaded <strong>${allItems.length}</strong> items from <a href="${ITEM_PROTO_URL}" target="_blank" class="load-link">item_proto.txt</a>`;
-  if (skipCount > 0) document.getElementById('globalSkipNote').textContent = `${skipCount} lines skipped due to parse errors`;
 }
 
 function buildTypeFilter() {
@@ -337,6 +390,7 @@ function buildTypeFilter() {
 
 // ── Filtering & Sorting ───────────────────────────────────────────────────────
 function applyFilters() {
+  currentPage = 1;
   const q     = document.getElementById('searchInput').value.toLowerCase().trim();
   const typeV = document.getElementById('typeFilter').value;
 
@@ -388,61 +442,137 @@ function sortFiltered() {
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  document.getElementById('statusText').querySelector?.('strong') ; // keep status, just update count below
-  document.getElementById('statusText').innerHTML =
-    `Showing <strong>${filtered.length}</strong> of <strong>${allItems.length}</strong> items — source: <a href="${ITEM_PROTO_URL}" target="_blank" class="load-link">item_proto.txt</a>`;
+  detailCache.clear();
 
-  for (const item of filtered) {
-    // Main row
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('statusText').innerHTML =
+    `Showing <strong>${filtered.length}</strong> of <strong>${allItems.length}</strong> items — ` +
+    `Page ${currentPage}/${totalPages} — ` +
+    `<a href="${ITEM_PROTO_URL}" target="_blank" class="load-link">item_proto.txt</a>`;
+
+  updatePagination(totalPages);
+
+  for (const item of pageItems) {
+    const typeLabel = ITEM_TYPES[item.type] ?? `Type ${item.type}`;
+    const fallbackLetter = (typeLabel)[0] ?? '?';
+    const iconUrl = ICON_BASE_URL + item.vnum + '.png';
+    const firstStat = firstApply(item);
+
     const tr = document.createElement('tr');
     tr.dataset.vnum = item.vnum;
-    const firstStat = firstApply(item);
     tr.innerHTML = `
+      <td class="icon-col">
+        <img src="${iconUrl}" width="32" height="32" loading="lazy" alt=""
+             onerror="this.outerHTML='<div class=\\'icon-fallback\\'>${escHtml(fallbackLetter)}</div>'">
+      </td>
       <td class="vnum">${item.vnum}</td>
       <td class="name">${escHtml(item.name)}</td>
-      <td class="type-col">${ITEM_TYPES[item.type] ?? `Type ${item.type}`}</td>
+      <td class="type-col">${escHtml(typeLabel)}</td>
       <td class="price">${item.buy_price > 0 ? fmtNum(item.buy_price) + ' yang' : '—'}</td>
       <td class="stat-col">${firstStat}</td>
     `;
     tr.onclick = () => toggleDetail(item.vnum, tr);
     tbody.appendChild(tr);
 
-    // Detail row
     const dr = document.createElement('tr');
     dr.className = 'detail-row';
     dr.id = `detail-${item.vnum}`;
-    const dtd = document.createElement('td');
-    dtd.colSpan = 5;
-    dtd.appendChild(buildDetail(item));
-    dr.appendChild(dtd);
     tbody.appendChild(dr);
   }
-  // Restore expanded row if still in filtered set
+
   if (expandedVnum !== null) {
     const tr = tbody.querySelector(`tr[data-vnum="${expandedVnum}"]`);
     const dr = document.getElementById(`detail-${expandedVnum}`);
-    if (tr && dr) { tr.classList.add('expanded'); dr.classList.add('open'); }
-    else expandedVnum = null;
+    if (tr && dr) {
+      tr.classList.add('expanded');
+      openDetailRow(dr, expandedVnum);
+    } else {
+      expandedVnum = null;
+    }
   }
+}
+
+function updatePagination(totalPages) {
+  const bar = document.getElementById('paginationBar');
+  if (!bar) return;
+  bar.querySelector('.pg-prev').disabled = currentPage <= 1;
+  bar.querySelector('.pg-next').disabled = currentPage >= totalPages;
+  bar.querySelector('.pg-label').textContent = `Page ${currentPage} of ${totalPages}`;
+
+  const jump = bar.querySelector('.pg-jump');
+  if (parseInt(jump.dataset.total || '0') !== totalPages) {
+    jump.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Page ${i}`;
+      jump.appendChild(opt);
+    }
+    jump.dataset.total = totalPages;
+  }
+  jump.value = currentPage;
+}
+
+function goPage(delta) {
+  currentPage += delta;
+  renderTable();
+  window.scrollTo(0, 0);
+}
+
+function jumpToPage(val) {
+  currentPage = parseInt(val, 10);
+  renderTable();
+  window.scrollTo(0, 0);
 }
 
 function toggleDetail(vnum, tr) {
   const dr = document.getElementById(`detail-${vnum}`);
   if (!dr) return;
   const isOpen = dr.classList.contains('open');
-  // Close any open
+
   document.querySelectorAll('.detail-row.open').forEach(r => r.classList.remove('open'));
   document.querySelectorAll('.data-table tbody tr.expanded').forEach(r => r.classList.remove('expanded'));
+
   if (!isOpen) {
-    dr.classList.add('open');
+    openDetailRow(dr, vnum);
     tr.classList.add('expanded');
     expandedVnum = vnum;
     history.replaceState(null, '', '#' + vnum);
-    tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
     expandedVnum = null;
     history.replaceState(null, '', location.pathname);
   }
+}
+
+function openDetailRow(dr, vnum) {
+  if (!detailCache.has(vnum)) {
+    const item = allItems.find(i => i.vnum === vnum);
+    if (!item) return;
+
+    const dtd = document.createElement('td');
+    dtd.colSpan = 6;
+    const inner = buildDetail(item);
+
+    const typeLabel = ITEM_TYPES[item.type] ?? `Type ${item.type}`;
+    const fallbackLetter = (typeLabel)[0] ?? '?';
+    const iconUrl = ICON_BASE_URL + item.vnum + '.png';
+    const iconDiv = document.createElement('div');
+    iconDiv.style.cssText = 'display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;';
+    iconDiv.innerHTML = `
+      <img src="${iconUrl}" width="64" height="64" loading="lazy" alt=""
+           style="border-radius:4px;"
+           onerror="this.outerHTML='<div class=\\'icon-fallback\\'style=\\'width:64px;height:64px;font-size:1.2rem\\'>${escHtml(fallbackLetter)}</div>'">
+    `;
+    inner.prepend(iconDiv);
+    dtd.appendChild(inner);
+    detailCache.set(vnum, dtd);
+    dr.appendChild(dtd);
+  }
+  dr.classList.add('open');
 }
 
 function expandRow(vnum) {

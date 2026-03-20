@@ -116,6 +116,16 @@
     }
     .error-box a { color: var(--info); }
     .skip-note { font-size: .75rem; color: var(--text-muted); margin-top: .5rem; text-align: right; }
+
+    /* Pagination bar */
+    .pagination-bar {
+      display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+      padding: .6rem 0; border-top: 1px solid var(--border); margin-top: .25rem;
+    }
+    .pagination-bar button { min-width: 80px; }
+    .pagination-bar button:disabled { opacity: .4; cursor: not-allowed; }
+    .pagination-bar .pg-label { font-size: .82rem; color: var(--text-muted); }
+    .pagination-bar select.pg-jump { min-width: 110px; }
   </style>
 </head>
 <body>
@@ -145,15 +155,16 @@
 
   <!-- Toolbar -->
   <div class="toolbar">
-    <input type="text"   id="searchInput" placeholder="Search by name…" oninput="applyFilters()" />
-    <select id="typeFilter" onchange="applyFilters()">
+    <input type="text"   id="searchInput" placeholder="Search by name…"
+           oninput="clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentPage=1;applyFilters();},300)" />
+    <select id="typeFilter" onchange="currentPage=1;applyFilters()">
       <option value="">All Types</option>
       <option value="0">Monster</option>
       <option value="1">NPC</option>
       <option value="2">Stone</option>
       <option value="3">Warp/Portal</option>
     </select>
-    <select id="rankFilter" onchange="applyFilters()">
+    <select id="rankFilter" onchange="currentPage=1;applyFilters()">
       <option value="">All Ranks</option>
       <option value="0">Pawn</option>
       <option value="1">Knight</option>
@@ -162,9 +173,11 @@
     </select>
     <div class="toolbar-sep"></div>
     <label>Lvl</label>
-    <input type="number" id="lvlMin" placeholder="min" min="0" oninput="applyFilters()" />
+    <input type="number" id="lvlMin" placeholder="min" min="0"
+           oninput="clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentPage=1;applyFilters();},300)" />
     <span style="color:var(--text-muted);font-size:.8rem">–</span>
-    <input type="number" id="lvlMax" placeholder="max" min="0" oninput="applyFilters()" />
+    <input type="number" id="lvlMax" placeholder="max" min="0"
+           oninput="clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentPage=1;applyFilters();},300)" />
     <div class="toolbar-sep"></div>
     <button class="toggle-btn" id="btnAggressive" onclick="toggleFilter('aggressive')">Aggressive</button>
     <button class="toggle-btn" id="btnBossOnly"   onclick="toggleFilter('bossOnly')">Boss &amp; King</button>
@@ -197,12 +210,18 @@
       <tbody id="tableBody"></tbody>
     </table>
   </div>
+  <div class="pagination-bar" id="paginationBar" style="display:none">
+    <button class="pg-prev" onclick="goPage(-1)">← Prev</button>
+    <span class="pg-label">Page 1 of 1</span>
+    <button class="pg-next" onclick="goPage(1)">Next →</button>
+    <select class="pg-jump" onchange="jumpToPage(this.value)" title="Jump to page"></select>
+  </div>
   <div class="skip-note" id="globalSkipNote" style="margin-top:.4rem"></div>
 </div>
 
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────────
-const MOB_PROTO_URL = 'https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/mob_proto.txt';
+const MOB_PROTO_URL = 'https://raw.githubusercontent.com/M2tecDev/Metin2_Rework_v3/main/data/mob_proto.txt';
 const ITEMS_PAGE    = 'items.html';
 
 const MOB_RANKS = { 0:'Pawn', 1:'Knight', 2:'Boss', 3:'King' };
@@ -246,10 +265,89 @@ let activeFilters = { aggressive: false, bossOnly: false };
 let expandedVnum = null;
 let skipCount = 0;
 
+// Pagination state
+let currentPage = 1;
+const PAGE_SIZE = 50;
+// Detail panel cache — built lazily on first click
+const detailCache = new Map();
+// Search debounce timer
+let searchTimer = null;
+
 function getHashVnum() {
   const h = location.hash.replace('#','');
   return h ? parseInt(h, 10) : null;
 }
+
+// ── Web Worker (inline Blob URL — no separate file needed) ────────────────────
+const WORKER_CODE = `
+self.onmessage = function(e) {
+  const lines = e.data.split('\\n');
+  const result = [];
+  let skipCount = 0;
+  for (const line of lines) {
+    if (!line.trim() || line.startsWith('#')) continue;
+    const c = line.split('\\t');
+    if (c.length < 14) { skipCount++; continue; }
+    try {
+      const mob = {
+        vnum:              parseInt(c[0],  10),
+        name:              c[1]?.trim() || '',
+        rank:              parseInt(c[2],  10) || 0,
+        type:              parseInt(c[3],  10) || 0,
+        battle_type:       parseInt(c[4],  10) || 0,
+        level:             parseInt(c[5],  10) || 0,
+        size:              parseInt(c[6],  10) || 0,
+        ai_flag:           parseInt(c[7],  10) || 0,
+        mount_capacity:    parseInt(c[8],  10) || 0,
+        race_flag:         parseInt(c[9],  10) || 0,
+        immune_flag:       parseInt(c[10], 10) || 0,
+        gold_min:          parseInt(c[11], 10) || 0,
+        gold_max:          parseInt(c[12], 10) || 0,
+        exp:               parseInt(c[13], 10) || 0,
+        def:               parseInt(c[14], 10) || 0,
+        attack_speed:      parseInt(c[15], 10) || 0,
+        move_speed:        parseInt(c[16], 10) || 0,
+        aggressive_hp_pct: parseInt(c[17], 10) || 0,
+        aggressive_sight:  parseInt(c[18], 10) || 0,
+        attack_range:      parseInt(c[19], 10) || 0,
+        drop_item:         parseInt(c[20], 10) || 0,
+        resurrection_vnum: parseInt(c[21], 10) || 0,
+        ench_curse:        parseInt(c[22], 10) || 0,
+        ench_slow:         parseInt(c[23], 10) || 0,
+        ench_poison:       parseInt(c[24], 10) || 0,
+        ench_stun:         parseInt(c[25], 10) || 0,
+        ench_crit:         parseInt(c[26], 10) || 0,
+        ench_penet:        parseInt(c[27], 10) || 0,
+        res_sword:         parseInt(c[28], 10) || 0,
+        res_twohand:       parseInt(c[29], 10) || 0,
+        res_dagger:        parseInt(c[30], 10) || 0,
+        res_bell:          parseInt(c[31], 10) || 0,
+        res_fan:           parseInt(c[32], 10) || 0,
+        res_bow:           parseInt(c[33], 10) || 0,
+        res_fire:          parseInt(c[34], 10) || 0,
+        res_elect:         parseInt(c[35], 10) || 0,
+        res_magic:         parseInt(c[36], 10) || 0,
+        res_wind:          parseInt(c[37], 10) || 0,
+        res_poison:        parseInt(c[38], 10) || 0,
+        dam_multiply:      parseFloat(c[39]) || 1.0,
+        summon_vnum:       parseInt(c[40], 10) || 0,
+        drain_sp:          parseInt(c[41], 10) || 0,
+        mob_color:         parseInt(c[42], 10) || 0,
+        polymorph_item:    parseInt(c[43], 10) || 0,
+        hp_percentage:     parseInt(c[44], 10) || 0,
+        heal_on_kill:      parseInt(c[45], 10) || 0,
+        max_hp:            parseInt(c[46], 10) || 0,
+      };
+      if (!isNaN(mob.vnum) && mob.vnum > 0) result.push(mob);
+      else skipCount++;
+    } catch(err) { skipCount++; }
+  }
+  self.postMessage({ mobs: result, skipCount });
+};
+`;
+const protoWorker = new Worker(URL.createObjectURL(
+  new Blob([WORKER_CODE], { type: 'text/javascript' })
+));
 
 // ── Fetch & Parse ─────────────────────────────────────────────────────────────
 async function init() {
@@ -258,12 +356,24 @@ async function init() {
       if (!r.ok) throw new Error(r.status);
       return r.text();
     });
-    parseMobs(text);
-    applyFilters();
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('tableWrap').style.display = 'block';
-    const hashVnum = getHashVnum();
-    if (hashVnum) setTimeout(() => expandRow(hashVnum), 100);
+    protoWorker.onmessage = function(e) {
+      allMobs = e.data.mobs;
+      skipCount = e.data.skipCount;
+      if (skipCount > 0) {
+        document.getElementById('globalSkipNote').textContent =
+          `${skipCount} lines skipped due to parse errors`;
+      }
+      document.getElementById('statusText').innerHTML =
+        `Loaded <strong>${allMobs.length}</strong> entries — ` +
+        `<a href="${MOB_PROTO_URL}" target="_blank" class="load-link">mob_proto.txt</a>`;
+      applyFilters();
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('tableWrap').style.display = 'block';
+      document.getElementById('paginationBar').style.display = 'flex';
+      const hashVnum = getHashVnum();
+      if (hashVnum) setTimeout(() => expandRow(hashVnum), 100);
+    };
+    protoWorker.postMessage(text);
   } catch (e) {
     document.getElementById('spinner').style.display = 'none';
     const eb = document.getElementById('errorBox');
@@ -272,73 +382,9 @@ async function init() {
   }
 }
 
-function parseMobs(text) {
-  skipCount = 0;
-  for (const line of text.split('\n')) {
-    if (!line.trim() || line.startsWith('#')) continue;
-    const c = line.split('\t');
-    if (c.length < 14) { skipCount++; continue; }
-    try {
-      const mob = {
-        vnum:             parseInt(c[0],  10),
-        name:             c[1]?.trim() || '',
-        rank:             parseInt(c[2],  10) || 0,
-        type:             parseInt(c[3],  10) || 0,
-        battle_type:      parseInt(c[4],  10) || 0,
-        level:            parseInt(c[5],  10) || 0,
-        size:             parseInt(c[6],  10) || 0,
-        ai_flag:          parseInt(c[7],  10) || 0,
-        mount_capacity:   parseInt(c[8],  10) || 0,
-        race_flag:        parseInt(c[9],  10) || 0,
-        immune_flag:      parseInt(c[10], 10) || 0,
-        gold_min:         parseInt(c[11], 10) || 0,
-        gold_max:         parseInt(c[12], 10) || 0,
-        exp:              parseInt(c[13], 10) || 0,
-        def:              parseInt(c[14], 10) || 0,
-        attack_speed:     parseInt(c[15], 10) || 0,
-        move_speed:       parseInt(c[16], 10) || 0,
-        aggressive_hp_pct:parseInt(c[17], 10) || 0,
-        aggressive_sight: parseInt(c[18], 10) || 0,
-        attack_range:     parseInt(c[19], 10) || 0,
-        drop_item:        parseInt(c[20], 10) || 0,
-        resurrection_vnum:parseInt(c[21], 10) || 0,
-        ench_curse:       parseInt(c[22], 10) || 0,
-        ench_slow:        parseInt(c[23], 10) || 0,
-        ench_poison:      parseInt(c[24], 10) || 0,
-        ench_stun:        parseInt(c[25], 10) || 0,
-        ench_crit:        parseInt(c[26], 10) || 0,
-        ench_penet:       parseInt(c[27], 10) || 0,
-        res_sword:        parseInt(c[28], 10) || 0,
-        res_twohand:      parseInt(c[29], 10) || 0,
-        res_dagger:       parseInt(c[30], 10) || 0,
-        res_bell:         parseInt(c[31], 10) || 0,
-        res_fan:          parseInt(c[32], 10) || 0,
-        res_bow:          parseInt(c[33], 10) || 0,
-        res_fire:         parseInt(c[34], 10) || 0,
-        res_elect:        parseInt(c[35], 10) || 0,
-        res_magic:        parseInt(c[36], 10) || 0,
-        res_wind:         parseInt(c[37], 10) || 0,
-        res_poison:       parseInt(c[38], 10) || 0,
-        dam_multiply:     parseFloat(c[39]) || 1.0,
-        summon_vnum:      parseInt(c[40], 10) || 0,
-        drain_sp:         parseInt(c[41], 10) || 0,
-        mob_color:        parseInt(c[42], 10) || 0,
-        polymorph_item:   parseInt(c[43], 10) || 0,
-        hp_percentage:    parseInt(c[44], 10) || 0,
-        heal_on_kill:     parseInt(c[45], 10) || 0,
-        max_hp:           parseInt(c[46], 10) || 0,
-      };
-      if (!isNaN(mob.vnum) && mob.vnum > 0) allMobs.push(mob);
-      else skipCount++;
-    } catch { skipCount++; }
-  }
-  document.getElementById('statusText').innerHTML =
-    `Loaded <strong>${allMobs.length}</strong> entries from <a href="${MOB_PROTO_URL}" target="_blank" class="load-link">mob_proto.txt</a>`;
-  if (skipCount > 0) document.getElementById('globalSkipNote').textContent = `${skipCount} lines skipped due to parse errors`;
-}
-
 // ── Filtering & Sorting ───────────────────────────────────────────────────────
 function applyFilters() {
+  currentPage = 1;
   const q      = document.getElementById('searchInput').value.toLowerCase().trim();
   const typeV  = document.getElementById('typeFilter').value;
   const rankV  = document.getElementById('rankFilter').value;
@@ -398,10 +444,21 @@ function sortFiltered() {
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  document.getElementById('statusText').innerHTML =
-    `Showing <strong>${filtered.length}</strong> of <strong>${allMobs.length}</strong> entries — source: <a href="${MOB_PROTO_URL}" target="_blank" class="load-link">mob_proto.txt</a>`;
+  detailCache.clear();
 
-  for (const mob of filtered) {
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('statusText').innerHTML =
+    `Showing <strong>${filtered.length}</strong> of <strong>${allMobs.length}</strong> entries — ` +
+    `Page ${currentPage}/${totalPages} — ` +
+    `<a href="${MOB_PROTO_URL}" target="_blank" class="load-link">mob_proto.txt</a>`;
+
+  updatePagination(totalPages);
+
+  for (const mob of pageItems) {
     const tr = document.createElement('tr');
     tr.dataset.vnum = mob.vnum;
     tr.innerHTML = `
@@ -419,37 +476,85 @@ function renderTable() {
     const dr = document.createElement('tr');
     dr.className = 'detail-row';
     dr.id = `detail-${mob.vnum}`;
-    const dtd = document.createElement('td');
-    dtd.colSpan = 7;
-    dtd.appendChild(buildDetail(mob));
-    dr.appendChild(dtd);
     tbody.appendChild(dr);
   }
 
   if (expandedVnum !== null) {
     const tr = tbody.querySelector(`tr[data-vnum="${expandedVnum}"]`);
     const dr = document.getElementById(`detail-${expandedVnum}`);
-    if (tr && dr) { tr.classList.add('expanded'); dr.classList.add('open'); }
-    else expandedVnum = null;
+    if (tr && dr) {
+      tr.classList.add('expanded');
+      openDetailRow(dr, expandedVnum);
+    } else {
+      expandedVnum = null;
+    }
   }
+}
+
+function updatePagination(totalPages) {
+  const bar = document.getElementById('paginationBar');
+  if (!bar) return;
+  bar.querySelector('.pg-prev').disabled = currentPage <= 1;
+  bar.querySelector('.pg-next').disabled = currentPage >= totalPages;
+  bar.querySelector('.pg-label').textContent = `Page ${currentPage} of ${totalPages}`;
+
+  const jump = bar.querySelector('.pg-jump');
+  if (parseInt(jump.dataset.total || '0') !== totalPages) {
+    jump.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Page ${i}`;
+      jump.appendChild(opt);
+    }
+    jump.dataset.total = totalPages;
+  }
+  jump.value = currentPage;
+}
+
+function goPage(delta) {
+  currentPage += delta;
+  renderTable();
+  window.scrollTo(0, 0);
+}
+
+function jumpToPage(val) {
+  currentPage = parseInt(val, 10);
+  renderTable();
+  window.scrollTo(0, 0);
 }
 
 function toggleDetail(vnum, tr) {
   const dr = document.getElementById(`detail-${vnum}`);
   if (!dr) return;
   const isOpen = dr.classList.contains('open');
+
   document.querySelectorAll('.detail-row.open').forEach(r => r.classList.remove('open'));
   document.querySelectorAll('.data-table tbody tr.expanded').forEach(r => r.classList.remove('expanded'));
+
   if (!isOpen) {
-    dr.classList.add('open');
+    openDetailRow(dr, vnum);
     tr.classList.add('expanded');
     expandedVnum = vnum;
     history.replaceState(null, '', '#' + vnum);
-    tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
     expandedVnum = null;
     history.replaceState(null, '', location.pathname);
   }
+}
+
+function openDetailRow(dr, vnum) {
+  if (!detailCache.has(vnum)) {
+    const mob = allMobs.find(m => m.vnum === vnum);
+    if (!mob) return;
+
+    const dtd = document.createElement('td');
+    dtd.colSpan = 7;
+    dtd.appendChild(buildDetail(mob));
+    detailCache.set(vnum, dtd);
+    dr.appendChild(dtd);
+  }
+  dr.classList.add('open');
 }
 
 function expandRow(vnum) {
