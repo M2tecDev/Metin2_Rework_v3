@@ -1,4 +1,11 @@
 # Guide: Horse, Mount, and Pet Systems
+
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [What is a vnum?](concept-vnum)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to understand, configure, and extend the classic horse system, the modern costume-mount system, and the pet system in Metin2 Rework v3.
 
 > **Note:** Derived from vanilla Metin2 source — verify against your local Rework v3 files.

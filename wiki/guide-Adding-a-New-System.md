@@ -1,5 +1,12 @@
 # Guide: Adding a New System — End-to-End Walkthrough
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [How Everything Fits Together](concept-architecture)
+> - [What is a Packet?](concept-packets)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > A complete step-by-step guide for building a new feature that touches all layers: Python UI → C++ client → packet → server → database.
 
 ## Overview

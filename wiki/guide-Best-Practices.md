@@ -1,5 +1,11 @@
 # Guide: Best Practices (The Rework Way)
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > Coding standards and patterns observed in the Rework v3 codebase. These are derived from the source code itself — follow them when adding new code.
 
 ## Overview

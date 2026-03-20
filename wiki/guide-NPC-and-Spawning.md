@@ -1,5 +1,12 @@
 # Guide: NPC & Spawning System
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [What is a vnum?](concept-vnum)
+> - [What is a SECTREE?](concept-sectree)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to add NPCs, register spawns, configure regen.txt, and control monster respawn behavior in Rework v3.
 
 ## Overview

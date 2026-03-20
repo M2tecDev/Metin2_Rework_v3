@@ -1,5 +1,11 @@
 # Guide: Build Environment
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to set up the build environment for Metin2 Rework v3 — client (Windows/MSVC) and server (Linux/GCC or Windows/MSVC).
 
 ## Overview

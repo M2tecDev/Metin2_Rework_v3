@@ -1,5 +1,12 @@
 # Guide: Economy Systems (Refine, Cube, Shops)
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [What are item_proto and mob_proto?](concept-proto)
+> - [What is a vnum?](concept-vnum)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to configure item upgrades via `refine_proto`, define crafting recipes via `cube.txt`, and create custom-currency NPC shops.
 
 ## Prerequisites

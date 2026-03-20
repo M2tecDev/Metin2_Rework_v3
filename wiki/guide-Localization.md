@@ -1,5 +1,11 @@
 # Guide: Localization
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [Why Python for the UI?](concept-python-ui)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to use, extend, and add new languages to the locale system in Metin2 Rework v3.
 
 ## Overview
