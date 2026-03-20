@@ -1,5 +1,12 @@
 # Blueprint: UI Python System
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [Why Python for the UI?](concept-python-ui)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the embedded CPython UI engine — interpreter lifecycle, C extension module registration, widget system, event dispatch, and network phase integration. Companion to [UI Python System](topic-UI-Python-System).
 
 ---

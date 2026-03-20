@@ -2,6 +2,34 @@
 
 ---
 
+## Getting Started
+- [[start-overview|Overview & Getting Started]]
+- [[start-requirements|Requirements & Prerequisites]]
+- [[start-server-setup|Setting Up the Server]]
+- [[start-client-setup|Setting Up the Client]]
+- [[start-first-change|Your First Change]]
+- [[start-workflow|Daily Development Workflow]]
+
+---
+
+## Concepts
+- [[concept-architecture|How Everything Fits Together]]
+- [[concept-packets|What is a Packet?]]
+- [[concept-vnum|What is a vnum?]]
+- [[concept-proto|What are item_proto and mob_proto?]]
+- [[concept-sectree|What is a SECTREE?]]
+- [[concept-lua-quests|Understanding the Quest System]]
+- [[concept-python-ui|Why Python for the UI?]]
+
+---
+
+## Troubleshooting
+- [[troubleshoot-server|Fixing Server Errors]]
+- [[troubleshoot-client|Fixing Client Errors]]
+- [[troubleshoot-db|Fixing Database Problems]]
+
+---
+
 ## Blueprints (Full-Stack)
 - [[blueprint-Game-Client-Protocol|Protocol Blueprint]]
 - [[blueprint-Login-Flow|Login Flow Blueprint]]

@@ -1,5 +1,11 @@
 # Guide: Asset Pipeline
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [Why Python for the UI?](concept-python-ui)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to add, place, pack, and reference game assets (textures, models, icons, effects) in Metin2 Rework v3.
 
 ## Prerequisites

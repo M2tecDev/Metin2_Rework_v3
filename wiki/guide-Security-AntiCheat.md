@@ -1,5 +1,12 @@
 # Guide: Security & Anti-Cheat
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [What is a Packet?](concept-packets)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > The golden rules and concrete implementation patterns for keeping the Rework v3 server secure against cheating and exploits.
 
 ## The Golden Rule

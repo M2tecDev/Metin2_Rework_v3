@@ -1,5 +1,12 @@
 # Game–Client Protocol
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [What is a Packet?](concept-packets)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > A comprehensive reference for the TCP binary protocol connecting the Metin2 game client (`client-src`) to the game server (`server-src/game`), covering all packet namespaces, wire formats, complete packet tables, and annotated round-trip flows for every major game action.
 
 ---

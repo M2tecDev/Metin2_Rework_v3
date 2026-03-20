@@ -1,5 +1,11 @@
 # Combat System
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > End-to-end reference for attack processing, damage calculation, skill execution, status effects, and combat networking across all three repositories.
 
 ## Table of Contents

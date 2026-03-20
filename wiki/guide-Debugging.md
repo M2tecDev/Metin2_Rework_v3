@@ -1,5 +1,11 @@
 # Guide: Debugging
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to read server and client logs, interpret common errors, add temporary debug output, and use gdb / WinDbg to investigate crashes in Metin2 Rework v3.
 
 ---

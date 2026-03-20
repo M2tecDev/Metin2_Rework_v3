@@ -1,5 +1,12 @@
 # Guide: Database & Proto Workflow
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [What are item_proto and mob_proto?](concept-proto)
+> - [What is a vnum?](concept-vnum)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How to add items and mobs, sync proto files between server and client, and manage vnum ranges in Rework v3.
 
 ## Overview

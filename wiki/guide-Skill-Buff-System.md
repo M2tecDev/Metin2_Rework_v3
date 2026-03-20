@@ -1,5 +1,12 @@
 # Guide: Skill & Buff System
 
+> ### ✅ Prerequisites
+> Before following this guide you should understand:
+> - [What is a vnum?](concept-vnum)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > How skills, affects (buffs/debuffs), cooldowns, and mana costs work in Rework v3 — and how to add new ones.
 
 ## Overview

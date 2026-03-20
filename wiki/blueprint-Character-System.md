@@ -1,5 +1,12 @@
 # Blueprint: Character System
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [What is a vnum?](concept-vnum)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the CHARACTER class — the unified entity model used for players, NPCs, and monsters. Covers the point array, job system, movement validation, party/guild, and extension how-tos. Companion to [Character System](topic-Character-System).
 
 ---

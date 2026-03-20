@@ -1,5 +1,11 @@
 # Blueprint: Combat System
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the server-authoritative real-time combat model — melee damage pipeline, magic/arrow/skill damage, hit/crit/penetrate rolls, on-hit affects, speed-hack detection, and PvP legality gating. Companion to [Combat System](topic-Combat-System).
 
 ---

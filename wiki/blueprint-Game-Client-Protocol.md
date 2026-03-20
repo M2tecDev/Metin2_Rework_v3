@@ -1,5 +1,12 @@
 # Blueprint: Game–Client Protocol
 
+> ### 📖 New to this topic?
+> This is an advanced reference page. If you are not familiar with the basics yet, read these first:
+> - [How Everything Fits Together](concept-architecture)
+> - [What is a Packet?](concept-packets)
+>
+> **Difficulty:** Advanced | **Assumes:** C++ knowledge, familiarity with the overall architecture
+
 > Full-stack architecture blueprint for the binary TCP protocol connecting the Metin2 client to the game server. Covers wire format, dispatcher internals, phase enforcement, cross-channel routing, and extension how-tos. Companion to [Game–Client Protocol](topic-Game-Client-Protocol).
 
 ---

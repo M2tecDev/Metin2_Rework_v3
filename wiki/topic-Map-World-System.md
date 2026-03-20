@@ -1,5 +1,12 @@
 # Map & World System
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [What is a SECTREE?](concept-sectree)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 This page covers the complete map and world pipeline for Metin2 Rework v3, from the server-side spatial partitioning engine through client-side terrain rendering to the minimap UI.
 
 ---
