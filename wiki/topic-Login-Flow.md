@@ -1,5 +1,12 @@
 # Login Flow
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [What is a Packet?](concept-packets)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > End-to-end walkthrough of the complete Metin2 login sequence: from the player clicking the Login button in the Python UI to the character select screen appearing.
 
 ## Overview

@@ -1,5 +1,12 @@
 # Character System
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [What is a vnum?](concept-vnum)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 ## Overview
 
 Every interactive entity in the game world — player characters, NPCs, monsters, and bosses — is represented by a single unified `CHARACTER` class (server-side `char.h` / `char.cpp`). This design means one code path handles movement validation, combat resolution, status effects, and view-set management regardless of whether the entity is controlled by a human player, a scripted NPC, or the AI state machine.

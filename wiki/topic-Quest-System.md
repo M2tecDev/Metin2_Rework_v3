@@ -1,5 +1,12 @@
 # Topic: Quest System
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [Understanding the Quest System](concept-lua-quests)
+> - [How Everything Fits Together](concept-architecture)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > End-to-end reference for the Metin2 Rework v3 quest pipeline — from `.quest` source files through the offline compiler (`qc`), the server-side Lua runtime (`CQuestManager`), and the client-side dialog flow (`CPythonQuest` / `uiquest.py`).
 
 ---

@@ -1,5 +1,12 @@
 # Item System
 
+> ### ✅ Prerequisites
+> Before reading this page you should understand:
+> - [What is a vnum?](concept-vnum)
+> - [What are item_proto and mob_proto?](concept-proto)
+>
+> If you are setting up for the first time, start with [Getting Started](start-overview).
+
 > **Scope:** Server (`server-src/game/`, `server-src/common/`) and client (`client-src/GameLib/`, `client-src/PythonModules/`, `client-bin/assets/root/`).
 
 ---
