@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Item Database — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .container { max-width: 1100px; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: .6rem; align-items: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: .8rem 1rem; margin-bottom: 1rem;
+    }
+    .toolbar input[type="text"] { flex: 1; min-width: 180px; }
+    .toolbar select { min-width: 140px; }
+    .toggle-btn {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text-muted); padding: .4rem .75rem;
+      font-size: .8rem; cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .toggle-btn.active { background: rgba(230,168,23,.15); border-color: var(--accent); color: var(--accent); }
+
+    /* Status bar */
+    .status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .8rem; color: var(--text-muted); margin-bottom: .5rem; flex-wrap: wrap; gap: .4rem;
+    }
+    .status-bar .load-link { color: var(--info); text-decoration: none; font-size: .75rem; }
+    .status-bar .load-link:hover { text-decoration: underline; }
+
+    /* Data table */
+    .data-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+    .data-table {
+      width: 100%; border-collapse: collapse; font-size: .85rem;
+      background: var(--surface);
+    }
+    .data-table thead th {
+      background: var(--surface-alt); color: var(--text-muted);
+      font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+      padding: .6rem .75rem; text-align: left; border-bottom: 1px solid var(--border);
+      white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    .data-table thead th:hover { color: var(--text); }
+    .data-table thead th .sort-icon { margin-left: .3rem; opacity: .4; }
+    .data-table thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border); cursor: pointer;
+      transition: background .1s;
+    }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:nth-child(even) { background: rgba(22,27,34,.6); }
+    .data-table tbody tr:hover { background: rgba(230,168,23,.06); }
+    .data-table tbody tr.expanded { background: rgba(230,168,23,.1); }
+    .data-table td { padding: .5rem .75rem; vertical-align: middle; }
+    .data-table td.vnum { font-family: var(--font-mono); color: var(--text-muted); font-size: .8rem; }
+    .data-table td.name { font-weight: 500; color: var(--text); }
+    .data-table td.type-col { font-size: .8rem; }
+    .data-table td.price { font-family: var(--font-mono); font-size: .8rem; color: var(--text-muted); }
+    .data-table td.stat-col { font-family: var(--font-mono); font-size: .8rem; color: var(--info); }
+
+    /* Detail panel (expands below the row as a full-width row) */
+    .detail-row { display: none; }
+    .detail-row.open { display: table-row; }
+    .detail-row td {
+      padding: 0; border-bottom: 1px solid var(--border);
+      background: var(--bg) !important;
+    }
+    .detail-inner {
+      padding: 1rem 1.4rem 1.2rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    @media (max-width: 640px) { .detail-inner { grid-template-columns: 1fr; } }
+    .detail-section h4 {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--text-muted); margin-bottom: .5rem;
+      border-bottom: 1px solid var(--border); padding-bottom: .3rem;
+    }
+    .detail-kv { display: flex; justify-content: space-between; align-items: baseline;
+                  font-size: .82rem; padding: .2rem 0; gap: 1rem; }
+    .detail-kv .dk { color: var(--text-muted); flex-shrink: 0; }
+    .detail-kv .dv { font-family: var(--font-mono); color: var(--text); text-align: right; }
+    .detail-kv .dv.accent { color: var(--accent); }
+    .detail-kv .dv.info   { color: var(--info); }
+    .detail-desc {
+      font-size: .82rem; color: var(--text-muted); line-height: 1.5;
+      padding: .4rem .6rem; background: var(--surface-alt); border-radius: var(--radius);
+      margin-bottom: .6rem; font-style: italic;
+    }
+    .tag-list { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .3rem; }
+    .tag {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 999px; padding: .15rem .6rem; font-size: .72rem;
+      font-family: var(--font-mono); color: var(--text-muted);
+    }
+    .tag.warn { border-color: var(--danger); color: var(--danger); background: rgba(248,81,73,.08); }
+    .jump-link { color: var(--info); cursor: pointer; text-decoration: underline; font-size: .8rem; }
+
+    /* Spinner */
+    .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 3rem; color: var(--text-muted); }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(248,81,73,.08); border: 1px solid var(--danger);
+      border-radius: var(--radius); padding: 1rem 1.2rem; color: var(--danger);
+      font-size: .85rem; margin: 1rem 0;
+    }
+    .error-box a { color: var(--info); }
+    .skip-note { font-size: .75rem; color: var(--text-muted); margin-top: .5rem; text-align: right; }
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    Metin2 Rework v3
+  </a>
+  <nav>
+    <a href="../index.html">Calculators</a>
+    <a href="mobs.html">Monster DB</a>
+    <a href="https://github.com/M2tecDev/Metin2_Rework_v3/wiki" target="_blank">Wiki</a>
+  </nav>
+</header>
+
+<div class="container">
+  <a href="../index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    All Calculators
+  </a>
+  <div class="hero" style="padding-top:1rem">
+    <h1>📦 Item Database</h1>
+    <p>All items from <code>item_proto.txt</code> — live data from the server repository</p>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Search by name…" oninput="applyFilters()" />
+    <select id="typeFilter" onchange="applyFilters()">
+      <option value="">All Types</option>
+    </select>
+    <button class="toggle-btn" id="btnBonuses" onclick="toggleFilter('bonuses')">Has Bonuses</button>
+    <button class="toggle-btn" id="btnQuest"   onclick="toggleFilter('quest')">Quest Items</button>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusText">Loading…</span>
+    <span id="skipNote" class="skip-note"></span>
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="spinner-wrap" id="spinner">
+    <div class="spinner"></div>
+    <span>Fetching item_proto.txt…</span>
+  </div>
+  <div id="errorBox" class="error-box" style="display:none"></div>
+
+  <!-- Table -->
+  <div class="data-table-wrap" id="tableWrap" style="display:none">
+    <table class="data-table" id="itemTable">
+      <thead>
+        <tr>
+          <th onclick="sortBy('vnum')"    data-col="vnum">vnum    <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('name')"    data-col="name">Name    <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('type')"    data-col="type">Type    <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('price')"   data-col="price">Buy Price <span class="sort-icon">▲</span></th>
+          <th>Stats</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <div class="skip-note" id="globalSkipNote" style="margin-top:.4rem"></div>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+const ITEM_PROTO_URL  = 'https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/item_proto.txt';
+const ITEMDESC_URL    = 'https://raw.githubusercontent.com/d1str4ught/m2dev-client/main/assets/locale/locale/en/itemdesc.txt';
+
+const ITEM_TYPES = {
+  0:'None',1:'Weapon',2:'Armor',3:'Consumable',4:'Auto-Use',
+  5:'Material',6:'Special',7:'Tool',8:'Lottery',9:'Currency (Yang)',
+  10:'Metin Stone',11:'Container',12:'Fish',13:'Rod',14:'Resource',
+  15:'Campfire',16:'Unique',17:'Skillbook',18:'Quest Item',
+  19:'Polymorph',20:'Treasure Box',21:'Treasure Key',
+  22:'Skillbook (Forget)',23:'Gift Box',24:'Pick',25:'Hair',
+  26:'Medium',27:'Costume',28:'Dragon Soul',29:'Dragon Soul Special',
+  30:'Extract',31:'Secondary Coin',32:'Ring',33:'Belt'
+};
+
+const APPLY_TYPES = {
+  0:'None',1:'Max HP',2:'Max SP',3:'Constitution (HT)',4:'Intelligence (IQ)',
+  5:'Strength (ST)',6:'Dexterity (DX)',11:'Attack Speed',12:'Movement Speed',
+  13:'Cast Speed',16:'Attack Bonus',17:'Defense Bonus',18:'Magic Attack',
+  19:'Magic Defense',21:'Critical Hit %',22:'Penetrating Hit %',
+  35:'Sword Resistance',36:'Two-Hand Resistance',37:'Dagger Resistance',
+  40:'Magic Resistance'
+};
+
+const VALUE_LABELS = {
+  1: ['Min ATK','Max ATK','Magic Min ATK','Magic Max ATK','Avg ATK',''],        // Weapon
+  2: ['Defense','Magic Defense','','','',''],                                   // Armor
+  3: ['HP Restore','SP Restore','Effect Type','Duration','',''],                // Consumable
+  4: ['HP Restore','SP Restore','Effect Type','Duration','',''],                // Auto-Use
+};
+
+// Antiflag bits
+const ANTIFLAGS = [
+  'No Drop','No Trade','No Sell','No Equip',
+  'Warrior cannot use','Assassin cannot use','Sura cannot use','Shaman cannot use',
+  'Male only','Female only'
+];
+// Flag bits
+const FLAGS = [
+  'Stackable','','','Refineable','Identifiable','','','',
+  'Anti-Alchemy','','','','Magic','','','Unique'
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allItems = [];
+let descs = new Map();
+let filtered = [];
+let sortCol = 'vnum';
+let sortAsc = true;
+let activeFilters = { bonuses: false, quest: false };
+let expandedVnum = null;
+let skipCount = 0;
+
+// URL hash for deep-linking
+function getHashVnum() {
+  const h = location.hash.replace('#','');
+  return h ? parseInt(h, 10) : null;
+}
+
+// ── Fetch & Parse ─────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const [protoText, descText] = await Promise.all([
+      fetch(ITEM_PROTO_URL).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+      fetch(ITEMDESC_URL).then(r => r.ok ? r.text() : '').catch(() => '')
+    ]);
+    parseDesc(descText);
+    parseProto(protoText);
+    buildTypeFilter();
+    applyFilters();
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('tableWrap').style.display = 'block';
+    const hashVnum = getHashVnum();
+    if (hashVnum) {
+      setTimeout(() => expandRow(hashVnum), 100);
+    }
+  } catch (e) {
+    document.getElementById('spinner').style.display = 'none';
+    const eb = document.getElementById('errorBox');
+    eb.style.display = 'block';
+    eb.innerHTML = `Failed to load item data. <br>URL: <a href="${ITEM_PROTO_URL}" target="_blank">${ITEM_PROTO_URL}</a><br><small>${e}</small>`;
+  }
+}
+
+function parseDesc(text) {
+  if (!text) return;
+  for (const line of text.split('\n')) {
+    const m = line.match(/^(\d+)\t(.+)/);
+    if (m) descs.set(parseInt(m[1], 10), m[2].trim());
+  }
+}
+
+function parseProto(text) {
+  skipCount = 0;
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line.trim() || line.startsWith('#')) continue;
+    const cols = line.split('\t');
+    if (cols.length < 12) { skipCount++; continue; }
+    try {
+      const item = {
+        vnum:        parseInt(cols[0],  10),
+        name:        cols[1]?.trim() || '',
+        type:        parseInt(cols[2],  10) || 0,
+        subtype:     parseInt(cols[3],  10) || 0,
+        weight:      parseInt(cols[4],  10) || 0,
+        size:        parseInt(cols[5],  10) || 0,
+        antiflag:    parseInt(cols[6],  10) || 0,
+        flag:        parseInt(cols[7],  10) || 0,
+        wearflag:    parseInt(cols[8],  10) || 0,
+        immuneflag:  parseInt(cols[9],  10) || 0,
+        gold:        parseInt(cols[10], 10) || 0,
+        buy_price:   parseInt(cols[11], 10) || 0,
+        limittype0:  parseInt(cols[12], 10) || 0,
+        limitval0:   parseInt(cols[13], 10) || 0,
+        limittype1:  parseInt(cols[14], 10) || 0,
+        limitval1:   parseInt(cols[15], 10) || 0,
+        applytype0:  parseInt(cols[16], 10) || 0,
+        applyval0:   parseInt(cols[17], 10) || 0,
+        applytype1:  parseInt(cols[18], 10) || 0,
+        applyval1:   parseInt(cols[19], 10) || 0,
+        applytype2:  parseInt(cols[20], 10) || 0,
+        applyval2:   parseInt(cols[21], 10) || 0,
+        value0:      parseInt(cols[22], 10) || 0,
+        value1:      parseInt(cols[23], 10) || 0,
+        value2:      parseInt(cols[24], 10) || 0,
+        value3:      parseInt(cols[25], 10) || 0,
+        value4:      parseInt(cols[26], 10) || 0,
+        value5:      parseInt(cols[27], 10) || 0,
+        socket_pct:  parseInt(cols[28], 10) || 0,
+        addon_type:  parseInt(cols[29], 10) || 0,
+      };
+      if (!isNaN(item.vnum) && item.vnum > 0) allItems.push(item);
+      else skipCount++;
+    } catch { skipCount++; }
+  }
+  const src = document.getElementById('statusText');
+  src.innerHTML = `Loaded <strong>${allItems.length}</strong> items from <a href="${ITEM_PROTO_URL}" target="_blank" class="load-link">item_proto.txt</a>`;
+  if (skipCount > 0) document.getElementById('globalSkipNote').textContent = `${skipCount} lines skipped due to parse errors`;
+}
+
+function buildTypeFilter() {
+  const sel = document.getElementById('typeFilter');
+  const seen = new Set(allItems.map(i => i.type));
+  const sorted = [...seen].sort((a,b)=>a-b);
+  for (const t of sorted) {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = ITEM_TYPES[t] ?? `Type ${t}`;
+    sel.appendChild(opt);
+  }
+}
+
+// ── Filtering & Sorting ───────────────────────────────────────────────────────
+function applyFilters() {
+  const q     = document.getElementById('searchInput').value.toLowerCase().trim();
+  const typeV = document.getElementById('typeFilter').value;
+
+  filtered = allItems.filter(item => {
+    if (q && !item.name.toLowerCase().includes(q)) return false;
+    if (typeV !== '' && item.type !== parseInt(typeV,10)) return false;
+    if (activeFilters.bonuses && item.applytype0 === 0 && item.applytype1 === 0 && item.applytype2 === 0) return false;
+    if (activeFilters.quest && item.type !== 18) return false;
+    return true;
+  });
+
+  sortFiltered();
+  renderTable();
+}
+
+function toggleFilter(key) {
+  activeFilters[key] = !activeFilters[key];
+  document.getElementById('btn' + key.charAt(0).toUpperCase() + key.slice(1))
+          .classList.toggle('active', activeFilters[key]);
+  applyFilters();
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  document.querySelectorAll('.data-table thead th').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.col === col);
+    if (th.dataset.col === col) th.querySelector('.sort-icon').textContent = sortAsc ? '▲' : '▼';
+  });
+  sortFiltered();
+  renderTable();
+}
+
+function sortFiltered() {
+  filtered.sort((a,b) => {
+    let av, bv;
+    if (sortCol === 'vnum')  { av = a.vnum;      bv = b.vnum; }
+    else if (sortCol === 'name')  { av = a.name;      bv = b.name; }
+    else if (sortCol === 'type')  { av = a.type;      bv = b.type; }
+    else if (sortCol === 'price') { av = a.buy_price; bv = b.buy_price; }
+    else { av = a.vnum; bv = b.vnum; }
+    if (av < bv) return sortAsc ? -1 : 1;
+    if (av > bv) return sortAsc ?  1 : -1;
+    return 0;
+  });
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  document.getElementById('statusText').querySelector?.('strong') ; // keep status, just update count below
+  document.getElementById('statusText').innerHTML =
+    `Showing <strong>${filtered.length}</strong> of <strong>${allItems.length}</strong> items — source: <a href="${ITEM_PROTO_URL}" target="_blank" class="load-link">item_proto.txt</a>`;
+
+  for (const item of filtered) {
+    // Main row
+    const tr = document.createElement('tr');
+    tr.dataset.vnum = item.vnum;
+    const firstStat = firstApply(item);
+    tr.innerHTML = `
+      <td class="vnum">${item.vnum}</td>
+      <td class="name">${escHtml(item.name)}</td>
+      <td class="type-col">${ITEM_TYPES[item.type] ?? `Type ${item.type}`}</td>
+      <td class="price">${item.buy_price > 0 ? fmtNum(item.buy_price) + ' yang' : '—'}</td>
+      <td class="stat-col">${firstStat}</td>
+    `;
+    tr.onclick = () => toggleDetail(item.vnum, tr);
+    tbody.appendChild(tr);
+
+    // Detail row
+    const dr = document.createElement('tr');
+    dr.className = 'detail-row';
+    dr.id = `detail-${item.vnum}`;
+    const dtd = document.createElement('td');
+    dtd.colSpan = 5;
+    dtd.appendChild(buildDetail(item));
+    dr.appendChild(dtd);
+    tbody.appendChild(dr);
+  }
+  // Restore expanded row if still in filtered set
+  if (expandedVnum !== null) {
+    const tr = tbody.querySelector(`tr[data-vnum="${expandedVnum}"]`);
+    const dr = document.getElementById(`detail-${expandedVnum}`);
+    if (tr && dr) { tr.classList.add('expanded'); dr.classList.add('open'); }
+    else expandedVnum = null;
+  }
+}
+
+function toggleDetail(vnum, tr) {
+  const dr = document.getElementById(`detail-${vnum}`);
+  if (!dr) return;
+  const isOpen = dr.classList.contains('open');
+  // Close any open
+  document.querySelectorAll('.detail-row.open').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.data-table tbody tr.expanded').forEach(r => r.classList.remove('expanded'));
+  if (!isOpen) {
+    dr.classList.add('open');
+    tr.classList.add('expanded');
+    expandedVnum = vnum;
+    history.replaceState(null, '', '#' + vnum);
+    tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    expandedVnum = null;
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
+function expandRow(vnum) {
+  const tr = document.querySelector(`tr[data-vnum="${vnum}"]`);
+  if (tr) toggleDetail(vnum, tr);
+}
+
+function buildDetail(item) {
+  const wrap = document.createElement('div');
+  wrap.className = 'detail-inner';
+
+  // Left column: identity + description + bonuses
+  const left = document.createElement('div');
+  left.innerHTML = `<div class="detail-section">
+    <h4>Identity</h4>
+    ${kv('vnum', item.vnum)}
+    ${kv('Name', escHtml(item.name))}
+    ${kv('Type', ITEM_TYPES[item.type] ?? `Type ${item.type}`)}
+    ${kv('Subtype', item.subtype)}
+    ${kv('Weight', item.weight)}
+    ${kv('Size', item.size)}
+  </div>`;
+
+  const desc = descs.get(item.vnum);
+  if (desc) {
+    left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Description</h4>
+      <div class="detail-desc">${escHtml(desc)}</div>
+    </div>`;
+  }
+
+  // Apply bonuses
+  const applies = [];
+  [[item.applytype0, item.applyval0],[item.applytype1, item.applyval1],[item.applytype2, item.applyval2]]
+    .forEach(([t,v]) => { if (t > 0 && v !== 0) applies.push(`${APPLY_TYPES[t] ?? 'Apply '+t}: +${v}`); });
+
+  if (applies.length) {
+    left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Bonuses</h4>
+      ${applies.map(a => `<div class="detail-kv"><span class="dk">${escHtml(a.split(':')[0])}</span><span class="dv info">${escHtml(a.split(':')[1])}</span></div>`).join('')}
+    </div>`;
+  }
+
+  // Requirements
+  const limits = [];
+  if (item.limittype0 > 0 && item.limitval0 > 0) limits.push(limitLabel(item.limittype0, item.limitval0));
+  if (item.limittype1 > 0 && item.limitval1 > 0) limits.push(limitLabel(item.limittype1, item.limitval1));
+  if (limits.length) {
+    left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Requirements</h4>
+      ${limits.map(l => `<div class="detail-kv"><span class="dk">${escHtml(l.k)}</span><span class="dv">${escHtml(l.v)}</span></div>`).join('')}
+    </div>`;
+  }
+
+  // Right column: values + prices + flags
+  const right = document.createElement('div');
+
+  // Values (type-aware labels)
+  const vlabels = VALUE_LABELS[item.type] || ['value0','value1','value2','value3','value4','value5'];
+  const vals = [item.value0,item.value1,item.value2,item.value3,item.value4,item.value5];
+  const valRows = vals.map((v,i) => v !== 0 ? `<div class="detail-kv"><span class="dk">${escHtml(vlabels[i] || `value${i}`)}</span><span class="dv">${v}</span></div>` : '').join('');
+  if (valRows) {
+    right.innerHTML += `<div class="detail-section">
+      <h4>Values</h4>${valRows}
+    </div>`;
+  }
+
+  // Prices
+  right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+    <h4>Prices</h4>
+    ${kv('Buy (NPC)', item.buy_price > 0 ? fmtNum(item.buy_price) + ' yang' : '—')}
+    ${kv('Sell (NPC)', item.gold > 0 ? fmtNum(item.gold) + ' yang' : '—')}
+    ${item.socket_pct > 0 ? kv('Socket %', item.socket_pct + '%') : ''}
+    ${item.addon_type !== 0 ? kv('Addon Type', item.addon_type) : ''}
+  </div>`;
+
+  // Anti-flags
+  const af = flagBits(item.antiflag, ANTIFLAGS);
+  if (af.length) {
+    right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Restrictions</h4>
+      <div class="tag-list">${af.map(f => `<span class="tag warn">${escHtml(f)}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  // Flags
+  const fl = flagBits(item.flag, FLAGS).filter(Boolean);
+  if (fl.length) {
+    right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Flags</h4>
+      <div class="tag-list">${fl.map(f => `<span class="tag">${escHtml(f)}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+  return wrap;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function firstApply(item) {
+  const pairs = [[item.applytype0, item.applyval0],[item.applytype1,item.applyval1],[item.applytype2,item.applyval2]];
+  for (const [t,v] of pairs) {
+    if (t > 0 && v !== 0) {
+      const short = (APPLY_TYPES[t] || `Apply${t}`).replace(/ .+/,'').slice(0,4).toUpperCase();
+      return `${short} +${v}`;
+    }
+  }
+  return '';
+}
+
+function limitLabel(type, val) {
+  const names = {0:'',1:'Level',2:'Strength',3:'Dexterity',4:'Intelligence',5:'Constitution'};
+  return { k: names[type] ?? `Limit${type}`, v: String(val) };
+}
+
+function flagBits(mask, labels) {
+  return labels.filter((l,i) => l && (mask >> i) & 1);
+}
+
+function kv(k, v) {
+  if (v === '' || v === undefined) return '';
+  return `<div class="detail-kv"><span class="dk">${escHtml(String(k))}</span><span class="dv">${escHtml(String(v))}</span></div>`;
+}
+
+function fmtNum(n) { return Number(n).toLocaleString(); }
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

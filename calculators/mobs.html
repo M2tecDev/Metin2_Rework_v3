@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Database — Metin2 Rework v3</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .container { max-width: 1100px; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: .6rem; align-items: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: .8rem 1rem; margin-bottom: 1rem;
+    }
+    .toolbar input[type="text"] { flex: 1; min-width: 160px; }
+    .toolbar select { min-width: 120px; }
+    .toolbar input[type="number"] { width: 72px; }
+    .toolbar label { font-size: .8rem; color: var(--text-muted); }
+    .toggle-btn {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text-muted); padding: .4rem .75rem;
+      font-size: .8rem; cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .toggle-btn.active { background: rgba(230,168,23,.15); border-color: var(--accent); color: var(--accent); }
+    .toolbar-sep { width: 1px; height: 24px; background: var(--border); }
+
+    /* Status bar */
+    .status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .8rem; color: var(--text-muted); margin-bottom: .5rem; flex-wrap: wrap; gap: .4rem;
+    }
+    .load-link { color: var(--info); text-decoration: none; font-size: .75rem; }
+    .load-link:hover { text-decoration: underline; }
+
+    /* Data table */
+    .data-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+    .data-table {
+      width: 100%; border-collapse: collapse; font-size: .85rem;
+      background: var(--surface);
+    }
+    .data-table thead th {
+      background: var(--surface-alt); color: var(--text-muted);
+      font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+      padding: .6rem .75rem; text-align: left; border-bottom: 1px solid var(--border);
+      white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    .data-table thead th:hover { color: var(--text); }
+    .data-table thead th .sort-icon { margin-left: .3rem; opacity: .4; }
+    .data-table thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s;
+    }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:nth-child(even) { background: rgba(22,27,34,.6); }
+    .data-table tbody tr:hover { background: rgba(230,168,23,.06); }
+    .data-table tbody tr.expanded { background: rgba(230,168,23,.1); }
+    .data-table td { padding: .5rem .75rem; vertical-align: middle; }
+    .data-table td.vnum  { font-family: var(--font-mono); color: var(--text-muted); font-size: .8rem; }
+    .data-table td.name  { font-weight: 500; color: var(--text); }
+    .data-table td.num   { font-family: var(--font-mono); font-size: .82rem; }
+    .data-table td.rank-boss { color: var(--danger); font-weight: 600; }
+    .data-table td.rank-king { color: var(--accent); font-weight: 700; }
+
+    /* Rank badge inline */
+    .rank-badge {
+      display: inline-block; padding: .1rem .5rem; border-radius: 999px;
+      font-size: .72rem; font-weight: 700; font-family: var(--font-mono);
+    }
+    .rank-0 { background: rgba(139,148,158,.12); color: var(--text-muted); }
+    .rank-1 { background: rgba(88,166,255,.12);  color: var(--info); }
+    .rank-2 { background: rgba(248,81,73,.15);   color: var(--danger); }
+    .rank-3 { background: rgba(230,168,23,.15);  color: var(--accent); }
+
+    /* Detail panel */
+    .detail-row { display: none; }
+    .detail-row.open { display: table-row; }
+    .detail-row td { padding: 0; border-bottom: 1px solid var(--border); background: var(--bg) !important; }
+    .detail-inner {
+      padding: 1rem 1.4rem 1.2rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    @media (max-width: 640px) { .detail-inner { grid-template-columns: 1fr; } }
+    .detail-section h4 {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--text-muted); margin-bottom: .5rem;
+      border-bottom: 1px solid var(--border); padding-bottom: .3rem;
+    }
+    .detail-kv { display: flex; justify-content: space-between; align-items: baseline;
+                  font-size: .82rem; padding: .2rem 0; gap: 1rem; }
+    .detail-kv .dk { color: var(--text-muted); flex-shrink: 0; }
+    .detail-kv .dv { font-family: var(--font-mono); color: var(--text); text-align: right; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .3rem; }
+    .tag {
+      background: var(--surface-alt); border: 1px solid var(--border);
+      border-radius: 999px; padding: .15rem .6rem; font-size: .72rem;
+      font-family: var(--font-mono); color: var(--text-muted);
+    }
+    .tag.aggro { border-color: var(--danger); color: var(--danger); background: rgba(248,81,73,.08); }
+    .tag.immune { border-color: var(--info); color: var(--info); background: rgba(88,166,255,.08); }
+    .jump-link { color: var(--info); cursor: pointer; text-decoration: underline; font-size: .8rem; }
+
+    /* Spinner / error */
+    .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 3rem; color: var(--text-muted); }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box {
+      background: rgba(248,81,73,.08); border: 1px solid var(--danger);
+      border-radius: var(--radius); padding: 1rem 1.2rem; color: var(--danger);
+      font-size: .85rem; margin: 1rem 0;
+    }
+    .error-box a { color: var(--info); }
+    .skip-note { font-size: .75rem; color: var(--text-muted); margin-top: .5rem; text-align: right; }
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a href="../index.html" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    Metin2 Rework v3
+  </a>
+  <nav>
+    <a href="../index.html">Calculators</a>
+    <a href="items.html">Item DB</a>
+    <a href="https://github.com/M2tecDev/Metin2_Rework_v3/wiki" target="_blank">Wiki</a>
+  </nav>
+</header>
+
+<div class="container">
+  <a href="../index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    All Calculators
+  </a>
+  <div class="hero" style="padding-top:1rem">
+    <h1>👾 Monster &amp; NPC Database</h1>
+    <p>All monsters and NPCs from <code>mob_proto.txt</code> — live data from the server repository</p>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input type="text"   id="searchInput" placeholder="Search by name…" oninput="applyFilters()" />
+    <select id="typeFilter" onchange="applyFilters()">
+      <option value="">All Types</option>
+      <option value="0">Monster</option>
+      <option value="1">NPC</option>
+      <option value="2">Stone</option>
+      <option value="3">Warp/Portal</option>
+    </select>
+    <select id="rankFilter" onchange="applyFilters()">
+      <option value="">All Ranks</option>
+      <option value="0">Pawn</option>
+      <option value="1">Knight</option>
+      <option value="2">Boss</option>
+      <option value="3">King</option>
+    </select>
+    <div class="toolbar-sep"></div>
+    <label>Lvl</label>
+    <input type="number" id="lvlMin" placeholder="min" min="0" oninput="applyFilters()" />
+    <span style="color:var(--text-muted);font-size:.8rem">–</span>
+    <input type="number" id="lvlMax" placeholder="max" min="0" oninput="applyFilters()" />
+    <div class="toolbar-sep"></div>
+    <button class="toggle-btn" id="btnAggressive" onclick="toggleFilter('aggressive')">Aggressive</button>
+    <button class="toggle-btn" id="btnBossOnly"   onclick="toggleFilter('bossOnly')">Boss &amp; King</button>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusText">Loading…</span>
+    <span id="skipNote" class="skip-note"></span>
+  </div>
+
+  <div class="spinner-wrap" id="spinner">
+    <div class="spinner"></div>
+    <span>Fetching mob_proto.txt…</span>
+  </div>
+  <div id="errorBox" class="error-box" style="display:none"></div>
+
+  <div class="data-table-wrap" id="tableWrap" style="display:none">
+    <table class="data-table" id="mobTable">
+      <thead>
+        <tr>
+          <th onclick="sortBy('vnum')"  data-col="vnum">vnum  <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('name')"  data-col="name">Name  <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('type')"  data-col="type">Type  <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('rank')"  data-col="rank">Rank  <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('level')" data-col="level">Level <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('hp')"    data-col="hp">Max HP   <span class="sort-icon">▲</span></th>
+          <th onclick="sortBy('exp')"   data-col="exp">EXP    <span class="sort-icon">▲</span></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <div class="skip-note" id="globalSkipNote" style="margin-top:.4rem"></div>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+const MOB_PROTO_URL = 'https://raw.githubusercontent.com/d1str4ught/m2dev-server/main/share/conf/mob_proto.txt';
+const ITEMS_PAGE    = 'items.html';
+
+const MOB_RANKS = { 0:'Pawn', 1:'Knight', 2:'Boss', 3:'King' };
+const MOB_TYPES = { 0:'Monster', 1:'NPC', 2:'Stone', 3:'Warp/Portal', 4:'Door', 5:'Building', 6:'PC', 7:'Polymorph', 8:'Mount' };
+
+const AI_FLAGS = [
+  'Aggressive','No Move','Coward (flees)','Assists Group',
+  'Stone Skin','Revive after death'
+];
+const IMMUNE_FLAGS = [
+  'Immune to Stun','Immune to Slow','Immune to Knockback',
+  'Immune to Curse','Immune to Poison','Immune to Terror','Immune to Reflect'
+];
+
+const RESISTS = [
+  'Sword','Two-Hand','Dagger','Bell','Fan','Bow',
+  'Fire','Electric','Magic','Wind','Poison'
+];
+const ENCHANTS = [
+  'Curse','Slow','Poison','Stun','Critical','Penetrate'
+];
+
+// mob_proto.txt column indices (0-based)
+// vnum(0) name(1) rank(2) type(3) battle_type(4) level(5) size(6)
+// ai_flag(7) mount_capacity(8) setRaceFlag(9) setImmuneFlag(10)
+// gold_min(11) gold_max(12) exp(13) def(14) attack_speed(15) move_speed(16)
+// aggressive_hp_pct(17) aggressive_sight(18) attack_range(19)
+// drop_item(20) resurrection_vnum(21)
+// enchant: curse(22) slow(23) poison(24) stun(25) critical(26) penetrate(27)
+// resist: sword(28) twohand(29) dagger(30) bell(31) fan(32) bow(33)
+//         fire(34) elect(35) magic(36) wind(37) poison(38)
+// dam_multiply(39) summon_vnum(40) drain_sp(41) mob_color(42)
+// polymorph_item(43) hpPercentage(44) healOnKill(45) MAX_HP(46)
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allMobs = [];
+let filtered = [];
+let sortCol = 'vnum';
+let sortAsc = true;
+let activeFilters = { aggressive: false, bossOnly: false };
+let expandedVnum = null;
+let skipCount = 0;
+
+function getHashVnum() {
+  const h = location.hash.replace('#','');
+  return h ? parseInt(h, 10) : null;
+}
+
+// ── Fetch & Parse ─────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const text = await fetch(MOB_PROTO_URL).then(r => {
+      if (!r.ok) throw new Error(r.status);
+      return r.text();
+    });
+    parseMobs(text);
+    applyFilters();
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('tableWrap').style.display = 'block';
+    const hashVnum = getHashVnum();
+    if (hashVnum) setTimeout(() => expandRow(hashVnum), 100);
+  } catch (e) {
+    document.getElementById('spinner').style.display = 'none';
+    const eb = document.getElementById('errorBox');
+    eb.style.display = 'block';
+    eb.innerHTML = `Failed to load monster data.<br>URL: <a href="${MOB_PROTO_URL}" target="_blank">${MOB_PROTO_URL}</a><br><small>${e}</small>`;
+  }
+}
+
+function parseMobs(text) {
+  skipCount = 0;
+  for (const line of text.split('\n')) {
+    if (!line.trim() || line.startsWith('#')) continue;
+    const c = line.split('\t');
+    if (c.length < 14) { skipCount++; continue; }
+    try {
+      const mob = {
+        vnum:             parseInt(c[0],  10),
+        name:             c[1]?.trim() || '',
+        rank:             parseInt(c[2],  10) || 0,
+        type:             parseInt(c[3],  10) || 0,
+        battle_type:      parseInt(c[4],  10) || 0,
+        level:            parseInt(c[5],  10) || 0,
+        size:             parseInt(c[6],  10) || 0,
+        ai_flag:          parseInt(c[7],  10) || 0,
+        mount_capacity:   parseInt(c[8],  10) || 0,
+        race_flag:        parseInt(c[9],  10) || 0,
+        immune_flag:      parseInt(c[10], 10) || 0,
+        gold_min:         parseInt(c[11], 10) || 0,
+        gold_max:         parseInt(c[12], 10) || 0,
+        exp:              parseInt(c[13], 10) || 0,
+        def:              parseInt(c[14], 10) || 0,
+        attack_speed:     parseInt(c[15], 10) || 0,
+        move_speed:       parseInt(c[16], 10) || 0,
+        aggressive_hp_pct:parseInt(c[17], 10) || 0,
+        aggressive_sight: parseInt(c[18], 10) || 0,
+        attack_range:     parseInt(c[19], 10) || 0,
+        drop_item:        parseInt(c[20], 10) || 0,
+        resurrection_vnum:parseInt(c[21], 10) || 0,
+        ench_curse:       parseInt(c[22], 10) || 0,
+        ench_slow:        parseInt(c[23], 10) || 0,
+        ench_poison:      parseInt(c[24], 10) || 0,
+        ench_stun:        parseInt(c[25], 10) || 0,
+        ench_crit:        parseInt(c[26], 10) || 0,
+        ench_penet:       parseInt(c[27], 10) || 0,
+        res_sword:        parseInt(c[28], 10) || 0,
+        res_twohand:      parseInt(c[29], 10) || 0,
+        res_dagger:       parseInt(c[30], 10) || 0,
+        res_bell:         parseInt(c[31], 10) || 0,
+        res_fan:          parseInt(c[32], 10) || 0,
+        res_bow:          parseInt(c[33], 10) || 0,
+        res_fire:         parseInt(c[34], 10) || 0,
+        res_elect:        parseInt(c[35], 10) || 0,
+        res_magic:        parseInt(c[36], 10) || 0,
+        res_wind:         parseInt(c[37], 10) || 0,
+        res_poison:       parseInt(c[38], 10) || 0,
+        dam_multiply:     parseFloat(c[39]) || 1.0,
+        summon_vnum:      parseInt(c[40], 10) || 0,
+        drain_sp:         parseInt(c[41], 10) || 0,
+        mob_color:        parseInt(c[42], 10) || 0,
+        polymorph_item:   parseInt(c[43], 10) || 0,
+        hp_percentage:    parseInt(c[44], 10) || 0,
+        heal_on_kill:     parseInt(c[45], 10) || 0,
+        max_hp:           parseInt(c[46], 10) || 0,
+      };
+      if (!isNaN(mob.vnum) && mob.vnum > 0) allMobs.push(mob);
+      else skipCount++;
+    } catch { skipCount++; }
+  }
+  document.getElementById('statusText').innerHTML =
+    `Loaded <strong>${allMobs.length}</strong> entries from <a href="${MOB_PROTO_URL}" target="_blank" class="load-link">mob_proto.txt</a>`;
+  if (skipCount > 0) document.getElementById('globalSkipNote').textContent = `${skipCount} lines skipped due to parse errors`;
+}
+
+// ── Filtering & Sorting ───────────────────────────────────────────────────────
+function applyFilters() {
+  const q      = document.getElementById('searchInput').value.toLowerCase().trim();
+  const typeV  = document.getElementById('typeFilter').value;
+  const rankV  = document.getElementById('rankFilter').value;
+  const lvlMin = parseInt(document.getElementById('lvlMin').value, 10) || 0;
+  const lvlMax = parseInt(document.getElementById('lvlMax').value, 10) || Infinity;
+
+  filtered = allMobs.filter(mob => {
+    if (q && !mob.name.toLowerCase().includes(q)) return false;
+    if (typeV !== '' && mob.type !== parseInt(typeV,10)) return false;
+    if (rankV !== '' && mob.rank !== parseInt(rankV,10)) return false;
+    if (mob.level < lvlMin || mob.level > lvlMax) return false;
+    if (activeFilters.aggressive && !(mob.ai_flag & 1)) return false;
+    if (activeFilters.bossOnly && mob.rank < 2) return false;
+    return true;
+  });
+
+  sortFiltered();
+  renderTable();
+}
+
+function toggleFilter(key) {
+  activeFilters[key] = !activeFilters[key];
+  const btnId = 'btn' + key.charAt(0).toUpperCase() + key.slice(1);
+  document.getElementById(btnId).classList.toggle('active', activeFilters[key]);
+  applyFilters();
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  document.querySelectorAll('.data-table thead th').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.col === col);
+    if (th.dataset.col === col) th.querySelector('.sort-icon').textContent = sortAsc ? '▲' : '▼';
+  });
+  sortFiltered();
+  renderTable();
+}
+
+function sortFiltered() {
+  filtered.sort((a,b) => {
+    let av, bv;
+    if      (sortCol === 'vnum')  { av = a.vnum;  bv = b.vnum; }
+    else if (sortCol === 'name')  { av = a.name;  bv = b.name; }
+    else if (sortCol === 'type')  { av = a.type;  bv = b.type; }
+    else if (sortCol === 'rank')  { av = a.rank;  bv = b.rank; }
+    else if (sortCol === 'level') { av = a.level; bv = b.level; }
+    else if (sortCol === 'hp')    { av = a.max_hp; bv = b.max_hp; }
+    else if (sortCol === 'exp')   { av = a.exp;   bv = b.exp; }
+    else { av = a.vnum; bv = b.vnum; }
+    if (av < bv) return sortAsc ? -1 : 1;
+    if (av > bv) return sortAsc ?  1 : -1;
+    return 0;
+  });
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  document.getElementById('statusText').innerHTML =
+    `Showing <strong>${filtered.length}</strong> of <strong>${allMobs.length}</strong> entries — source: <a href="${MOB_PROTO_URL}" target="_blank" class="load-link">mob_proto.txt</a>`;
+
+  for (const mob of filtered) {
+    const tr = document.createElement('tr');
+    tr.dataset.vnum = mob.vnum;
+    tr.innerHTML = `
+      <td class="vnum">${mob.vnum}</td>
+      <td class="name">${escHtml(mob.name)}</td>
+      <td>${MOB_TYPES[mob.type] ?? `Type ${mob.type}`}</td>
+      <td><span class="rank-badge rank-${mob.rank}">${MOB_RANKS[mob.rank] ?? mob.rank}</span></td>
+      <td class="num">${mob.level}</td>
+      <td class="num">${mob.max_hp > 0 ? fmtNum(mob.max_hp) : '—'}</td>
+      <td class="num">${mob.exp > 0 ? fmtNum(mob.exp) : '—'}</td>
+    `;
+    tr.onclick = () => toggleDetail(mob.vnum, tr);
+    tbody.appendChild(tr);
+
+    const dr = document.createElement('tr');
+    dr.className = 'detail-row';
+    dr.id = `detail-${mob.vnum}`;
+    const dtd = document.createElement('td');
+    dtd.colSpan = 7;
+    dtd.appendChild(buildDetail(mob));
+    dr.appendChild(dtd);
+    tbody.appendChild(dr);
+  }
+
+  if (expandedVnum !== null) {
+    const tr = tbody.querySelector(`tr[data-vnum="${expandedVnum}"]`);
+    const dr = document.getElementById(`detail-${expandedVnum}`);
+    if (tr && dr) { tr.classList.add('expanded'); dr.classList.add('open'); }
+    else expandedVnum = null;
+  }
+}
+
+function toggleDetail(vnum, tr) {
+  const dr = document.getElementById(`detail-${vnum}`);
+  if (!dr) return;
+  const isOpen = dr.classList.contains('open');
+  document.querySelectorAll('.detail-row.open').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.data-table tbody tr.expanded').forEach(r => r.classList.remove('expanded'));
+  if (!isOpen) {
+    dr.classList.add('open');
+    tr.classList.add('expanded');
+    expandedVnum = vnum;
+    history.replaceState(null, '', '#' + vnum);
+    tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    expandedVnum = null;
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
+function expandRow(vnum) {
+  const tr = document.querySelector(`tr[data-vnum="${vnum}"]`);
+  if (tr) toggleDetail(vnum, tr);
+}
+
+function buildDetail(mob) {
+  const wrap = document.createElement('div');
+  wrap.className = 'detail-inner';
+
+  // Left column
+  const left = document.createElement('div');
+  left.innerHTML = `<div class="detail-section">
+    <h4>Identity</h4>
+    ${kv('vnum',   mob.vnum)}
+    ${kv('Name',   escHtml(mob.name))}
+    ${kv('Type',   MOB_TYPES[mob.type] ?? `Type ${mob.type}`)}
+    ${kv('Rank',   MOB_RANKS[mob.rank] ?? mob.rank)}
+    ${kv('Level',  mob.level)}
+    ${kv('Size',   mob.size)}
+  </div>`;
+
+  left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+    <h4>Combat Stats</h4>
+    ${mob.max_hp      > 0 ? kv('Max HP',          fmtNum(mob.max_hp))      : ''}
+    ${mob.def         > 0 ? kv('Defense',          mob.def)                 : ''}
+    ${mob.attack_speed> 0 ? kv('Attack Speed',     mob.attack_speed)        : ''}
+    ${mob.move_speed  > 0 ? kv('Move Speed',       mob.move_speed)          : ''}
+    ${mob.attack_range> 0 ? kv('Attack Range',     mob.attack_range)        : ''}
+    ${mob.dam_multiply !== 1.0 ? kv('Dmg Multiply', mob.dam_multiply.toFixed(2)) : ''}
+    ${mob.exp         > 0 ? kv('EXP Reward',       fmtNum(mob.exp))         : ''}
+  </div>`;
+
+  if (mob.gold_min > 0 || mob.gold_max > 0) {
+    left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Gold Drop</h4>
+      ${kv('Range', fmtNum(mob.gold_min) + ' – ' + fmtNum(mob.gold_max) + ' yang')}
+    </div>`;
+  }
+
+  if (mob.aggressive_sight > 0) {
+    left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Aggression</h4>
+      ${kv('Sight Range',  mob.aggressive_sight)}
+      ${mob.aggressive_hp_pct > 0 ? kv('Aggro at HP%', mob.aggressive_hp_pct + '%') : ''}
+    </div>`;
+  }
+
+  // Cross-links
+  const links = [];
+  if (mob.drop_item > 0) {
+    links.push(`Drops: <a href="${ITEMS_PAGE}#${mob.drop_item}" class="jump-link">item #${mob.drop_item}</a>`);
+  }
+  if (mob.resurrection_vnum > 0) {
+    links.push(`Resurrects as: <a href="#${mob.resurrection_vnum}" class="jump-link" onclick="navigateToMob(${mob.resurrection_vnum})">mob #${mob.resurrection_vnum}</a>`);
+  }
+  if (mob.summon_vnum > 0) {
+    links.push(`Summons: <a href="#${mob.summon_vnum}" class="jump-link" onclick="navigateToMob(${mob.summon_vnum})">mob #${mob.summon_vnum}</a>`);
+  }
+  if (links.length) {
+    left.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Links</h4>
+      ${links.map(l => `<div style="font-size:.82rem;padding:.2rem 0">${l}</div>`).join('')}
+    </div>`;
+  }
+
+  // Right column
+  const right = document.createElement('div');
+
+  // Resistances
+  const resVals = [mob.res_sword,mob.res_twohand,mob.res_dagger,mob.res_bell,mob.res_fan,mob.res_bow,
+                   mob.res_fire,mob.res_elect,mob.res_magic,mob.res_wind,mob.res_poison];
+  const hasRes = resVals.some(v => v !== 0);
+  if (hasRes) {
+    right.innerHTML += `<div class="detail-section">
+      <h4>Resistances</h4>
+      ${resVals.map((v,i) => v !== 0 ? kv(RESISTS[i], (v > 0 ? '+' : '') + v + '%') : '').join('')}
+    </div>`;
+  }
+
+  // Enchant chances
+  const enchVals = [mob.ench_curse,mob.ench_slow,mob.ench_poison,mob.ench_stun,mob.ench_crit,mob.ench_penet];
+  const hasEnch = enchVals.some(v => v !== 0);
+  if (hasEnch) {
+    right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Enchant Chances</h4>
+      ${enchVals.map((v,i) => v !== 0 ? kv(ENCHANTS[i], v + '%') : '').join('')}
+    </div>`;
+  }
+
+  // AI Flags
+  const aiTags = AI_FLAGS.filter((l,i) => (mob.ai_flag >> i) & 1);
+  if (aiTags.length) {
+    right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>AI Flags</h4>
+      <div class="tag-list">${aiTags.map(f => `<span class="tag aggro">${escHtml(f)}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  // Immune Flags
+  const immTags = IMMUNE_FLAGS.filter((l,i) => (mob.immune_flag >> i) & 1);
+  if (immTags.length) {
+    right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Immunities</h4>
+      <div class="tag-list">${immTags.map(f => `<span class="tag immune">${escHtml(f)}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  // Misc
+  const miscRows = [];
+  if (mob.drain_sp > 0) miscRows.push(kv('SP Drain', mob.drain_sp));
+  if (mob.heal_on_kill > 0) miscRows.push(kv('Heal on Kill', mob.heal_on_kill));
+  if (mob.hp_percentage > 0) miscRows.push(kv('HP Percentage', mob.hp_percentage + '%'));
+  if (miscRows.length) {
+    right.innerHTML += `<div class="detail-section" style="margin-top:.8rem">
+      <h4>Miscellaneous</h4>${miscRows.join('')}
+    </div>`;
+  }
+
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+  return wrap;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function navigateToMob(vnum) {
+  event.preventDefault();
+  event.stopPropagation();
+  // Jump to mob in current filtered list or expand
+  const existing = document.querySelector(`tr[data-vnum="${vnum}"]`);
+  if (existing) {
+    existing.scrollIntoView({ behavior:'smooth', block:'center' });
+    toggleDetail(vnum, existing);
+  } else {
+    // Clear filters and jump
+    document.getElementById('searchInput').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('rankFilter').value = '';
+    document.getElementById('lvlMin').value = '';
+    document.getElementById('lvlMax').value = '';
+    activeFilters.aggressive = false;
+    activeFilters.bossOnly   = false;
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    expandedVnum = vnum;
+    applyFilters();
+    setTimeout(() => {
+      const tr = document.querySelector(`tr[data-vnum="${vnum}"]`);
+      if (tr) { tr.scrollIntoView({behavior:'smooth',block:'center'}); toggleDetail(vnum,tr); }
+    }, 100);
+  }
+}
+
+function kv(k, v) {
+  if (v === '' || v === undefined || v === null) return '';
+  return `<div class="detail-kv"><span class="dk">${escHtml(String(k))}</span><span class="dv">${escHtml(String(v))}</span></div>`;
+}
+function fmtNum(n) { return Number(n).toLocaleString(); }
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
