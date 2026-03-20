@@ -7,3 +7,6 @@
 [submodule "client-bin"]
 	path = client-bin
 	url = https://github.com/d1str4ught/m2dev-client
+[submodule "server"]
+	path = server
+	url = https://github.com/d1str4ught/m2dev-server
