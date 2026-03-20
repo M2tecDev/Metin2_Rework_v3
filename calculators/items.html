@@ -327,9 +327,10 @@ self.onmessage = function(e) {
   self.postMessage({ items: result, skipCount });
 };
 `;
-const protoWorker = new Worker(URL.createObjectURL(
-  new Blob([WORKER_CODE], { type: 'text/javascript' })
-));
+const _workerBlob = new Blob([WORKER_CODE], { type: 'text/javascript' });
+const _workerUrl  = URL.createObjectURL(_workerBlob);
+const protoWorker = new Worker(_workerUrl);
+URL.revokeObjectURL(_workerUrl);
 
 // ── Fetch & Parse ─────────────────────────────────────────────────────────────
 async function init() {

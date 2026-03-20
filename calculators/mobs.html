@@ -345,9 +345,10 @@ self.onmessage = function(e) {
   self.postMessage({ mobs: result, skipCount });
 };
 `;
-const protoWorker = new Worker(URL.createObjectURL(
-  new Blob([WORKER_CODE], { type: 'text/javascript' })
-));
+const _workerBlob = new Blob([WORKER_CODE], { type: 'text/javascript' });
+const _workerUrl  = URL.createObjectURL(_workerBlob);
+const protoWorker = new Worker(_workerUrl);
+URL.revokeObjectURL(_workerUrl);
 
 // ── Fetch & Parse ─────────────────────────────────────────────────────────────
 async function init() {
@@ -692,6 +693,10 @@ function buildDetail(mob) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function navigateToMob(evt, vnum) {
+  if (!allMobs.some(m => m.vnum === vnum)) {
+    console.warn('navigateToMob: vnum ' + vnum + ' not found in database');
+    return;
+  }
   evt.preventDefault();
   evt.stopPropagation();
   // Jump to mob in current filtered list or expand
