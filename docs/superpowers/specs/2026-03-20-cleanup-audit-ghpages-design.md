@@ -87,6 +87,8 @@ jobs:
 
       - name: Build icons (if script exists)
         run: |
+          # Condition: always run if the script exists; skip silently if not yet committed.
+          # The script itself handles missing source files gracefully (see Task 5).
           if [ -f scripts/build_icons.py ]; then
             pip install Pillow --quiet
             python scripts/build_icons.py
@@ -107,7 +109,7 @@ jobs:
           fi
 ```
 
-**`GITHUB_TOKEN` note:** The built-in token can push to the same branch but will **not** trigger further `push` workflow runs (GitHub prevents re-triggering to avoid loops). This is the desired behavior. The explicit `git push origin master` in the final step ensures the push always targets `master` regardless of which trigger (push, schedule, or `workflow_dispatch`) initiated the run.
+**`GITHUB_TOKEN` re-trigger note:** When the Action pushes using `GITHUB_TOKEN`, GitHub suppresses any resulting workflow trigger events — this applies regardless of whether the current run was initiated by `push`, `schedule`, or `workflow_dispatch`. No `[skip ci]` in the commit message is required. This is documented GitHub behavior: "events triggered by the GITHUB_TOKEN will not create a new workflow run."
 
 **Resulting raw URLs:**
 ```
@@ -202,6 +204,7 @@ Repos scanned: server-src, client-src, client-bin, server
 4. **Priority cross-link pass is unconditional** on all 70+ pages. Audit report cross-link opportunities are **additive** to the priority table, not a replacement.
 5. **Trigger matching:** Case-insensitive, whole-word match. Applies to both prose text and inline code spans (e.g., `` `char.cpp` `` or `` `CG_*` ``). Does not match inside fenced code blocks (` ``` ` blocks) — only in prose and inline code.
 6. **Target page identifiers** in the priority table are filenames without the `.md` extension (matching the existing `wiki/` directory naming convention, e.g., `topic-Game-Client-Protocol` = `wiki/topic-Game-Client-Protocol.md`). All filenames use lowercase kebab-case.
+7. **Single-target rows in the priority table are intentionally complete.** For example, `vnum` links only to `concept-vnum` because that is the canonical definition page. If a page mentions both `vnum` and `item_proto`, the `item_proto` trigger fires independently and adds its own links (`topic-Item-System`, `guide-Database-Proto`). Each trigger row is evaluated independently — there is no "combined trigger" logic.
 
 ### Priority cross-links (applied to all pages regardless of audit)
 
@@ -264,17 +267,19 @@ const workerCode = `
   self.onmessage = function(e) {
     const lines = e.data.split('\\n');
     const result = [];
-    // ... parse lines into objects ...
+    // ... parse lines into item/mob objects ...
     self.postMessage(result);
   };
 `;
 const worker = new Worker(URL.createObjectURL(new Blob([workerCode], { type: 'text/javascript' })));
 ```
 
+**What the Worker parses:** The Worker receives the raw `item_proto.txt` (or `mob_proto.txt`) text and parses it into an array of plain objects. Each object contains the fields already used by the existing `items.html`/`mobs.html` (e.g., `vnum`, `name`, `type`, `buy_price`, apply values, etc. — match the existing field names exactly). The Worker does **not** process item data scripts or icon paths. Icon URLs are constructed client-side as `data/icons/<vnum>.png` using the `vnum` field from each parsed object.
+
 **Web Worker data flow:**
 1. Main thread: `const text = await fetch(DATA_URL).then(r => r.text())`
 2. Main thread: `worker.postMessage(text)` — sends raw text string to Worker
-3. Worker: receives string in `e.data`, parses it, calls `self.postMessage(parsedArray)`
+3. Worker: receives string in `e.data`, parses it into array of objects, calls `self.postMessage(parsedArray)`
 4. Main thread: `worker.onmessage = e => { allItems = e.data; renderTable(); }`
 5. Loading indicator is shown from step 1 until step 4 completes
 
@@ -319,7 +324,7 @@ GitHub Action runs this script and commits any new/changed files in `data/icons/
 
 | Location | Size | `<img>` attributes | Fallback (onerror) |
 |---|---|---|---|
-| Table first column (new) | 32×32 | `loading="lazy"` | Grey `<div>` 32×32, background `var(--surface-alt)`, centered text = first letter of the item's type string from the existing `ITEM_TYPES` map (e.g., `ITEM_TYPES[item.type]` → take `[0]`); if type unknown use `"?"` |
+| Table first column (new) | 32×32 | `loading="lazy"` | Grey `<div>` 32×32, background `var(--surface-alt)`, centered text = first character of the type label string from the existing `ITEM_TYPES` constant already declared in `items.html` (e.g., `(ITEM_TYPES[item.type] ?? '?')[0]`). `ITEM_TYPES` is a plain object mapping integer type → string label (e.g., `{1: 'Weapon', 2: 'Armor', …}`). |
 | Detail panel | 64×64 | `loading="lazy"` | Same grey div, 64×64 |
 
 Icon URL: `https://raw.githubusercontent.com/M2tecDev/Metin2_Rework_v3/main/data/icons/<vnum>.png`
