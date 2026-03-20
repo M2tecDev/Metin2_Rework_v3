@@ -2,11 +2,34 @@
 
 Welcome to the complete technical reference for **Metin2 Rework v3**. This wiki covers all three repositories and documents every library, module, and cross-cutting system.
 
+---
+
+## Where do I start?
+
+Choose the path that matches your background. Each path links to pages in the right order.
+
+### Path A — New to Metin2 development
+You have little or no experience with game server development and want to understand the project from the ground up before touching code.
+
+→ [Overview & Getting Started](start-overview) → [Requirements](start-requirements) → [Server Setup](start-server-setup) → [Client Setup](start-client-setup) → [Your First Change](start-first-change) → [Daily Workflow](start-workflow)
+
+### Path B — I know programming but am new to Metin2
+You are comfortable with C++ or Python and want to understand the Metin2-specific concepts before diving into guides.
+
+→ [Overview & Getting Started](start-overview) → [Architecture](concept-architecture) → [Packets](concept-packets) → [vnum](concept-vnum) → [Proto](concept-proto) → [Adding a New System](guide-Adding-a-New-System)
+
+### Path C — Experienced developer
+You understand server/client architecture and want the deep technical reference directly.
+
+→ [Overview & Getting Started](start-overview) → [Blueprint pages](#blueprints-full-stack-architecture) → [Topic Guides](#topic-guides-cross-cutting)
+
+---
+
 ## Repositories
 
 | Repo | Description |
 |------|-------------|
-| **client-src** | C++ client source — all libraries compiled into `metin2client.exe` |
+| **client-src** | C++ client source — all libraries compiled into `Metin2.exe` |
 | **client-bin** | Runtime assets — Python scripts (`root/`, `uiscript/`), data files |
 | **server-src** | C++ server source — `game`, `db`, shared libraries |
 
@@ -80,6 +103,47 @@ These pages explain how systems work **across all three repos**, tracing data fr
 | [Quest System](topic-Quest-System) | Lua scripting, qc compiler, quest API (~90 functions) |
 | [UI Python System](topic-UI-Python-System) | Python/C++ bridge, widget system, network phases |
 | [Map & World System](topic-Map-World-System) | SECTREE, spawns, dungeons, terrain rendering, warps |
+
+---
+
+## Getting Started
+
+New to the project? Start here. These pages require no prior knowledge of Metin2.
+
+| Page | Description |
+|------|-------------|
+| [Overview & Getting Started](start-overview) | What the project is, the 3 repos, how they relate, and a glossary of key terms |
+| [Requirements & Prerequisites](start-requirements) | Software and hardware needed to run the server or build the client |
+| [Setting Up the Server](start-server-setup) | Correct startup order (db → game), verification steps, shutdown order |
+| [Setting Up the Client](start-client-setup) | Configuring serverinfo.py, packing assets, and connecting to your server |
+| [Your First Change](start-first-change) | Three end-to-end examples: spawn an NPC, modify an item, move a UI button |
+| [Daily Development Workflow](start-workflow) | Master reference table — what to restart or recompile after every type of change |
+
+---
+
+## Concepts
+
+Plain-language explanations of the core technical concepts. No C++ knowledge required.
+
+| Page | Description |
+|------|-------------|
+| [How Everything Fits Together](concept-architecture) | The overall architecture: client, game process, db process, MariaDB — and why each exists |
+| [What is a Packet?](concept-packets) | How the client and server communicate: the 5 namespaces, wire format, and connection phases |
+| [What is a vnum?](concept-vnum) | The ID system: every item, mob, skill, and map has a vnum — why numbers instead of names |
+| [What are item_proto and mob_proto?](concept-proto) | The blueprint system and the two-version problem (server SQL vs. client binary) |
+| [What is a SECTREE?](concept-sectree) | Spatial partitioning: how the server efficiently tracks which entities are near which |
+| [Understanding the Quest System](concept-lua-quests) | From .quest source to runtime: states, triggers, the qc compiler, and the suspend/resume cycle |
+| [Why Python for the UI?](concept-python-ui) | How Python controls all UI, the root/uiscript split, C++ module system, and the pack cycle |
+
+---
+
+## Troubleshooting
+
+| Page | Description |
+|------|-------------|
+| [Fixing Server Errors](troubleshoot-server) | syserr reference for game and db process errors with step-by-step fixes and checklists |
+| [Fixing Client Errors](troubleshoot-client) | syserr.txt reference for Python, DirectX, and connection errors; build failure fixes |
+| [Fixing Database Problems](troubleshoot-db) | MariaDB connectivity, proto loading failures, character save issues, CRC mismatch fixes |
 
 ---
 
