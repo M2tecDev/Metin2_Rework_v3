@@ -53,5 +53,6 @@ jobs:
             echo "No changes to data/ — skipping commit"
           else
             git commit -m "chore: sync data files from submodules [auto]"
+            git pull --rebase origin master
             git push origin master
           fi
