@@ -24,7 +24,7 @@ The output files are loaded at runtime by the game process to drive the quest sy
 
 ## Dependencies
 
-- `liblua` — Lua 5.0.3 lexer and `luaL_loadbuffer` for syntax checking.
+- [server-src-liblua](server-src-liblua) — Lua 5.0.3 lexer (`luaX_setinput`/`luaX_lex`) and `luaL_loadbuffer` for syntax checking.
 - C++17 standard library (`<fstream>`, `<sstream>`, `<map>`, `<set>`, `<vector>`).
 - POSIX `mkdir` / `sys/stat.h` (or `_mkdir` on Windows).
 

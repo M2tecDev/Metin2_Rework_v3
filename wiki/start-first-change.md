@@ -23,7 +23,7 @@ INSERT INTO mob_proto (vnum, name, type, battle_type, level, size, exp, max_hp, 
 VALUES (30001, 'Test Wolf', 1, 0, 10, 1, 50, 500, ...);
 ```
 
-Choose a vnum in the safe custom range (10000–65535 for mobs). The full column list is in the `mob_proto` table schema. For a first test, copying values from an existing nearby mob and changing the vnum and name is fine.
+Choose a [vnum](concept-vnum) in the safe custom range (10000–65535 for mobs). The full column list is in the [mob_proto](topic-Item-System) table schema (see [guide-Database-Proto](guide-Database-Proto) and [Item Database](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/items.html)). For a first test, copying values from an existing nearby mob and changing the vnum and name is fine.
 
 ### Step 2: Add a regen.txt entry
 

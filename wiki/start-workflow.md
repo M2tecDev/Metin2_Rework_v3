@@ -32,7 +32,7 @@ Find the row matching what you changed, then follow each column from left to rig
 | `item_proto` binary (client copy) | — | — | — | ✓ | — | ✓ | ✓ | Proto sync — see [guide-Database-Proto](guide-Database-Proto) |
 | `mob_proto` binary (client copy) | — | — | — | ✓ | — | ✓ | ✓ | Proto sync |
 | `conf.txt` (game config) | — | — | — | ✓ | — | — | — | Game reads conf.txt at startup |
-| `db.conf` | — | — | ✓ | — | — | — | — | db reads its config at startup |
+| `db.conf` (located at `server/share/conf/`; see [start-server-setup](start-server-setup)) | — | — | ✓ | — | — | — | — | db reads its config at startup |
 | `server/share/conf/*.txt` config files | — | — | — | ✓ | — | — | — | Game reads conf at startup; restart game channel only |
 | Management scripts (`start.py`, `stop.py`, etc.) | — | — | — | — | — | — | — | Script changes take effect on next invocation |
 

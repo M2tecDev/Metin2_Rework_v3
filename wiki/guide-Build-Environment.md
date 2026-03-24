@@ -128,6 +128,8 @@ cmake --install server-src/build
 
 Resulting binaries: `game`, `db`, `qc` (quest compiler).
 
+> **Deployment note:** Compiled server binaries (`game`, `db`) are deployed to `server/share/bin/` in the server runtime submodule. The management scripts (`start.py`, `stop.py`) look for binaries in that path. See [start-server-setup](start-server-setup) for the full deployment workflow.
+
 ### Build for Debug (GDB)
 
 ```bash
@@ -236,6 +238,8 @@ This version string is embedded in the `db` binary. If git is not found, it fall
 | `Address already in use` (server start) | Previous instance running | `pkill game` / `pkill db` |
 
 ---
+
+For the full server-src source file inventory (~268 files across all targets), see [server-src-Overview](server-src-Overview).
 
 ## Key Files
 

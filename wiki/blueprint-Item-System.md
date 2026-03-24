@@ -268,5 +268,6 @@
 |----------|------|
 | Reference page | [topic-Item-System](topic-Item-System) |
 | Proto workflow | [guide-Database-Proto](guide-Database-Proto) |
+| Inventory grid engine | [server-src-libgame](server-src-libgame) — `CGrid` for multi-cell item occupancy |
 | Upgrade calculator | [Upgrade/Refine Calculator](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/upgrade.html) |
 | Flag calculator | [Flag Bitmask Calculator](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/flags.html) |

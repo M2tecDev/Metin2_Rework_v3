@@ -126,7 +126,7 @@ if (m_map_kLogonAccount.find(login) != m_map_kLogonAccount.end())
 
 ## 6. Gold/Value Overflow Checks
 
-The maximum gold value is capped server-side at `GOLD_MAX = 2,000,000,000`. Any operation that would exceed this is rejected:
+The maximum gold value is capped server-side at `GOLD_MAX = 2,000,000,000` (defined in `common/length.h`, used by [server-src-libthecore](server-src-libthecore)). Any operation that would exceed this is rejected:
 
 ```cpp
 if (ch->GetGold() + lGold > GOLD_MAX)

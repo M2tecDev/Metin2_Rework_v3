@@ -9,9 +9,9 @@
 
 ## Overview
 
-Every interactive entity in the game world — player characters, NPCs, monsters, and bosses — is represented by a single unified `CHARACTER` class (server-side `char.h` / `char.cpp`). This design means one code path handles movement validation, combat resolution, status effects, and view-set management regardless of whether the entity is controlled by a human player, a scripted NPC, or the AI state machine.
+Every interactive entity in the game world — player characters, NPCs, monsters, and bosses — is represented by a single unified [CHARACTER class](blueprint-Character-System) (server-side `char.h` / `char.cpp`). This design means one code path handles movement validation, combat resolution, status effects, and view-set management regardless of whether the entity is controlled by a human player, a scripted NPC, or the AI state machine.
 
-The `CHARACTER` class inherits from `CEntity`, which provides the spatial identity (position, current SECTREE cell, view-set) shared by all world objects. On top of that base, `CHARACTER` layers:
+The `CHARACTER` class inherits from `CEntity`, which provides the spatial identity (position, current [SECTREE](concept-sectree) cell, view-set) shared by all world objects. On top of that base, `CHARACTER` layers:
 
 - A **point array** (`m_points[]`) storing every numeric stat and resource value.
 - A **skill level / cooldown table** per-character.

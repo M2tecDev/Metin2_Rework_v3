@@ -58,7 +58,7 @@ systemctl status mariadb
 systemctl start mariadb
 ```
 
-**2. Is the port correct in `db/db.conf`?**
+**2. Is the port correct in `db/db.conf`?** (config file located at `server/share/conf/db.conf`; see [start-server-setup](start-server-setup))
 The default MariaDB port is `3306`. Check `db/db.conf`:
 ```
 MYSQL_PORT      3306

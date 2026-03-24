@@ -161,7 +161,7 @@ Client ←──CG/GC──► game ←──GD/DG──► db ←──SQL─�
                game ←──GG──► game   (cross-channel: warps, whispers)
 ```
 
-All connections use TCP (reliable, ordered delivery). There is no UDP in this stack. See [concept-packets](concept-packets) for the full packet namespace reference.
+All connections use TCP (reliable, ordered delivery). There is no UDP in this stack. See [concept-packets](concept-packets) for the full packet namespace reference. For the event loop and I/O multiplexer behind all packet I/O, see [server-src-libthecore](server-src-libthecore). For the async DB communication layer, see [server-src-libsql](server-src-libsql).
 
 ---
 
@@ -200,8 +200,8 @@ A waiter crash means customers have to reconnect and re-order, but the kitchen s
 | DB process logs (info) | `server/db/syslog` |
 | DB process errors | `server/db/syserr` |
 | Game configuration | `server/share/conf/conf.txt` |
-| DB configuration | `server/share/conf/db.conf` |
-| Item definitions | `server/share/conf/item_proto.txt` |
+| DB configuration | `server/share/conf/db.conf` (see [start-server-setup](start-server-setup)) |
+| Item definitions | `server/share/conf/item_proto.txt` (see [topic-Item-System](topic-Item-System), [guide-Database-Proto](guide-Database-Proto), [Item Database](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/items.html)) |
 | Mob definitions | `server/share/conf/mob_proto.txt` |
 | Other game config | `server/share/conf/*.txt` |
 | Server SQL schema | `server/sql/` |

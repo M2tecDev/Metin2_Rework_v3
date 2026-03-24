@@ -30,8 +30,8 @@ Each type of game object has its own vnum space — the same number can safely a
 
 | Type | vnum range | Example | Where defined |
 |------|------------|---------|---------------|
-| Items | 1 – 799999 | vnum 1 = Sword +0 | `item_proto` (SQL table + client binary) |
-| Mobs / NPCs | 1 – 65535 | vnum 101 = Wolf | `mob_proto` (SQL table + client binary) |
+| Items | 1 – 799999 | vnum 1 = Sword +0 | [item_proto](topic-Item-System) (SQL table + client binary; see [guide-Database-Proto](guide-Database-Proto) and [Item Database](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/items.html)) |
+| Mobs / NPCs | 1 – 65535 | vnum 101 = Wolf | [mob_proto](topic-Item-System) (SQL table + client binary) |
 | Skills | 1 – 255 | vnum 1 = Sword Skill | `skill_proto` (SQL table) |
 | Effects | registered at startup | Hit particle effect | `CEffectManager` in the client |
 | Maps | 1–299 (static), 300+ (dynamic) | 1 = n_flame_01 | Map config files |

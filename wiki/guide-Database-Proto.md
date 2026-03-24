@@ -18,7 +18,9 @@ Metin2 uses two binary-like "proto" tables as the single source of truth for all
 | `item_proto` | SQL table + `.txt` CSV | Server MariaDB | Server runtime + client binary file |
 | `mob_proto` | SQL table + `.txt` CSV | Server MariaDB | Server runtime + client binary file |
 
-The `db` process loads both tables at startup from the SQL database and broadcasts them to every connecting `game` process via `QUERY_BOOT / DG_BOOT`. The **client** also needs matching binary proto files to render names, icons, and stats correctly.
+> **Runtime location:** `item_proto.txt` and `mob_proto.txt` live at `server/share/conf/` in the server runtime submodule. These are the text-format files read by the `db` process at startup; see [server-src-db](server-src-db) and [server-src-common](server-src-common) for the constant definitions (`EItemType`, `EApplyTypes`, `EWearPositions`) that define their fields.
+
+The `db` process loads both tables at startup from the SQL database and broadcasts them to every connecting `game` process via `QUERY_BOOT / DG_BOOT` (see [topic-Game-Client-Protocol](topic-Game-Client-Protocol) and [blueprint-Game-Client-Protocol](blueprint-Game-Client-Protocol) for the full packet reference). The **client** also needs matching binary proto files to render names, icons, and stats correctly.
 
 ---
 

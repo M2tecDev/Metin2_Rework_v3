@@ -9,6 +9,8 @@
 
 This page covers the complete map and world pipeline for Metin2 Rework v3, from the server-side spatial partitioning engine through client-side terrain rendering to the minimap UI.
 
+> **Key library references:** [server-src-libgame](server-src-libgame) implements `CAttribute` (per-cell walkability from `.atr` files) and `CGrid` (inventory grid shared with the map layer). [client-src-PRTerrainLib](client-src-PRTerrainLib) defines `TERRAIN_SIZE`, `CELLSCALE`, and `TERRAIN_XSIZE`/`YSIZE` constants used by the client terrain renderer.
+
 ---
 
 ## Table of Contents

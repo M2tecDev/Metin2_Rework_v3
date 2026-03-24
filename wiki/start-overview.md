@@ -118,7 +118,7 @@ You want the deep technical reference without hand-holding.
 |------|------------------------|
 | **vnum** | Virtual Number — the unique integer ID assigned to every item, mob, skill, map, and effect. If two things share a vnum, things break. |
 | **proto** | Short for "prototype table" — the blueprint for a type of item or mob. `item_proto` defines every item; `mob_proto` defines every mob. Exists as both a SQL table (server) and a binary file (client). |
-| **sectree** | A 3200×3200 unit cell in the map grid. The server uses these to efficiently find which entities are near each other, rather than checking every entity against every other entity. |
+| **sectree** | A spatial partitioning cell in the map grid used by the [sectree](concept-sectree) system. The server uses these to efficiently find which entities are near each other. |
 | **packet** | A binary message sent over TCP between the client and server. Every player action (attack, move, use item) is a packet. Every server response (HP change, item update) is a packet. |
 | **phase** | The connection state a client is currently in: HANDSHAKE → LOGIN → SELECT → LOADING → GAME. Different packet types are only valid in specific phases. |
 | **pulse** | One server tick. The server runs at 40 pulses per second. All timers, movement, and combat are measured in pulses. |

@@ -9,6 +9,8 @@
 
 > Full-stack architecture blueprint for the Lua-based quest engine — from `.quest` source files through the offline `qc` compiler, the server-side `CQuestManager` coroutine runtime, to the client dialog packets and Python UI. Companion to [Quest System](topic-Quest-System).
 
+> **Source file location:** Lua quest source files (`.quest`) are stored in `server/share/locale/english/quest/` in the server runtime submodule (286 quest files). The `qc` compiler is invoked from that directory via `make.py` and emits compiled chunks to `object/`. See [server-src-qc](server-src-qc) for the full compiler architecture.
+
 ---
 
 ## 1. Full-Stack Architecture

@@ -9,6 +9,8 @@
 
 > End-to-end reference for the Metin2 Rework v3 quest pipeline — from `.quest` source files through the offline compiler (`qc`), the server-side Lua runtime (`CQuestManager`), and the client-side dialog flow (`CPythonQuest` / `uiquest.py`).
 
+> **Source file location:** Lua quest source files (`.quest`) are stored in `server/share/locale/english/quest/` in the server runtime submodule (286 quest files). The `qc` compiler is run from that directory via `make.py` and emits compiled chunks to the `object/` subdirectory. See [server-src-qc](server-src-qc) for compiler architecture details.
+
 ---
 
 ## Table of Contents

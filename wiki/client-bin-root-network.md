@@ -90,7 +90,7 @@ Two scripts handle all client-side network concerns. `networkmodule.py` owns the
 | `SERVER_IP` | `"178.18.255.214"` | Production server IP address |
 | `SERVER_IP_TEST` | `"127.0.0.1"` | Test server IP address (localhost) |
 | `CH1_NAME` … `CH4_NAME` | `"CH1"` … `"CH4"` | Channel display names |
-| `PORT_1` … `PORT_4` | `11011` / `11021` / `11031` / `11041` | Game channel TCP/UDP ports |
+| `PORT_1` … `PORT_4` | `11011` / `11021` / `11031` / `11041` | Game channel TCP/UDP ports (PORT_1=11011 matches the default game port in [start-server-setup](start-server-setup)) |
 | `PORT_AUTH` | `11000` | Authentication server port |
 | `PORT_MARK` | `11011` | Guild mark server port |
 | `STATE_NONE` | `"..."` | Default state label |

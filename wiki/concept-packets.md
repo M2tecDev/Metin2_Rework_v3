@@ -17,7 +17,7 @@ A packet is a binary message with a fixed structure: a header that says what typ
 **Analogy:** Think of a government form. There is a form number on the top (the header — tells you which form this is), and then fields you fill in below (the payload — the actual data). The server has a registry of every known form number and knows exactly what fields to expect for each one.
 
 When the client attacks a monster:
-1. Python code calls a C++ function: `net.SendAttackPacket(monster_vid, attack_type)`
+1. [Python](topic-UI-Python-System) code calls a C++ function: `net.SendAttackPacket(monster_vid, attack_type)`
 2. C++ serialises this into bytes and sends it over TCP
 3. The server receives the bytes, reads the 2-byte header (`CG::ATTACK`), looks up the handler, and processes the attack
 
@@ -160,4 +160,6 @@ For the full indexed packet tables with directions, sizes, and descriptions, see
 
 - [topic-Game-Client-Protocol](topic-Game-Client-Protocol) — full packet tables for all 5 namespaces
 - [blueprint-Game-Client-Protocol](blueprint-Game-Client-Protocol) — deep-dive into the dispatcher architecture
+- [server-src-libthecore](server-src-libthecore) — `RingBuffer` and `fdwatch` that back all packet I/O
+- [client-src-EterLib](client-src-EterLib) — client-side `CNetworkStream` and `RingBuffer`
 - [guide-Adding-a-New-System](guide-Adding-a-New-System) — step-by-step guide to adding a new packet

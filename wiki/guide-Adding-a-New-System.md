@@ -3,7 +3,8 @@
 > ### ✅ Prerequisites
 > Before following this guide you should understand:
 > - [How Everything Fits Together](concept-architecture)
-> - [What is a Packet?](concept-packets)
+> - [What is a Packet?](concept-packets) — full packet reference is at [topic-Game-Client-Protocol](topic-Game-Client-Protocol) and [blueprint-Game-Client-Protocol](blueprint-Game-Client-Protocol) (needed when defining new CG/GC headers)
+> - [Security Checklist](guide-Security-AntiCheat) — new system handlers should follow this before going live
 >
 > If you are setting up for the first time, start with [Getting Started](start-overview).
 

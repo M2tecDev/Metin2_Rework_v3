@@ -141,7 +141,7 @@ boot sequence done
 The key line is **`boot sequence done`**. If you see this, db is ready and you can start game.
 
 If you see errors instead, check `db/syserr`. Common causes:
-- MariaDB not running or credentials wrong → check `db.conf`
+- MariaDB not running or credentials wrong → check `db.conf` (at `server/share/conf/`)
 - Wrong port in `db.conf` → default MariaDB port is 3306
 - Missing database tables → run the schema SQL first
 
@@ -207,7 +207,7 @@ Always stop game first and give it a moment to flush (a few seconds), then stop 
 | Mistake | Symptom | Fix |
 |---------|---------|-----|
 | Starting game before db | `game/syserr`: "cannot connect to db process", game exits | Start db first, wait for "boot sequence done" |
-| Wrong IP or port in `db.conf` | db cannot connect to MariaDB | Check host/port/credentials match your MariaDB setup |
+| Wrong IP or port in `db.conf` (`server/share/conf/db.conf`) | db cannot connect to MariaDB | Check host/port/credentials match your MariaDB setup |
 | Missing or empty `mob_proto` / `item_proto` | game exits at boot with proto load error | Run the SQL import for proto tables |
 | Missing map files | game exits with "cannot find map" error | Verify map directory path in `conf.txt` |
 | Quest files not compiled | Quests silently fail at runtime | Run `qc` on all `.quest` files; output goes to `game/object/` |

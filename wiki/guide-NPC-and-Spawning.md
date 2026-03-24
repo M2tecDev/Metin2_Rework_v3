@@ -11,6 +11,8 @@
 
 ## Overview
 
+> **Runtime location:** Regen and spawn configuration files (`regen.txt`, `mob_group.txt`, `npc_list.txt`) are located in `server/share/` in the server runtime submodule, under `server/share/data/map/<mapname>/`.
+
 Every mob and NPC on a map is controlled by two systems:
 
 | System | Files | What it controls |
@@ -170,7 +172,7 @@ end
 
 ## 6. Respawn Behavior
 
-Respawn is driven by the `SECTREE` system and the regen event loop:
+Respawn is driven by the [SECTREE](concept-sectree) partitioning system and the regen event loop ([server-src-libgame](server-src-libgame) provides `CAttribute` for per-cell walkability checks):
 
 1. A mob dies → `CHARACTER::Dead()` is called → a regen event is scheduled.
 2. After `regen_cycle` minutes, the regen event fires.

@@ -25,7 +25,7 @@
 
 Metin2 Rework v3 produces log output from three distinct layers:
 
-1. **Server-side** (`game` and `db` processes) — written by the `sys_log` / `sys_err` macros in `libthecore/log.cpp`, backed by spdlog with a daily-rotating file sink (`syslog_rotate_sink.h`).
+1. **Server-side** (`game` and `db` processes) — written by the `sys_log` / `sys_err` macros in [server-src-libthecore](server-src-libthecore) (`libthecore/log.cpp`), backed by spdlog with a daily-rotating file sink (`syslog_rotate_sink.h`).
 2. **Client-side** (Windows executable) — the client writes `syserr.txt` and `syslog.txt` to its working directory and exposes Python-callable trace helpers.
 3. **Crash artefacts** — Linux produces core dumps readable by gdb; Windows produces a crash dump (`.dmp`) and can be analysed with WinDbg or the Visual Studio debugger.
 

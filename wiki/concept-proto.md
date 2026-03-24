@@ -123,3 +123,5 @@ For mob_proto the analogous key fields are `vnum`, `name`, `type`, `level`, `max
 - [Database & Proto Workflow](guide-Database-Proto) — the complete step-by-step guide with exact commands
 - [What is a vnum?](concept-vnum) — understanding the ID system behind the proto tables
 - [Fixing Database Problems](troubleshoot-db) — when proto loading fails
+- [server-src-db](server-src-db) — the `db` process reads proto via `ProtoReader` and broadcasts via `DG::BOOT`
+- [server-src-common](server-src-common) — `EItemType`, `EApplyTypes`, `EWearPositions` constants define proto fields

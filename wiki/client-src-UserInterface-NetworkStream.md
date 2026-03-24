@@ -6,7 +6,7 @@
 
 ## Overview
 
-`CPythonNetworkStream` inherits from `CNetworkStream` (the encrypted TCP layer in EterLib) and `CSingleton<CPythonNetworkStream>`. It is the single point of contact between the game logic and the server. All outbound packets are written via `Send*` methods; all inbound packets are parsed by `Recv*` handlers organised into per-phase dispatch tables.
+`CPythonNetworkStream` inherits from `CNetworkStream` (the encrypted TCP layer in [client-src-EterLib](client-src-EterLib)) and `CSingleton<CPythonNetworkStream>`. It is the single point of contact between the game logic and the server. All outbound packets are written via `Send*` methods; all inbound packets are parsed by `Recv*` handlers organised into per-phase dispatch tables.
 
 Phase transitions are driven by the server: when a `PHASE` packet arrives the stream switches its active dispatch table and calls the appropriate `Set*Phase()` method. Each phase owns a `PacketHandlerMap` (an `unordered_map<uint16_t, PacketHandlerEntry>`) that maps packet headers to member function pointers, a minimum expected size, and an `exitPhase` flag.
 
