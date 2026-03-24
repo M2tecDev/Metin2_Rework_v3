@@ -64,7 +64,7 @@ Metin2 uses a **server-authoritative real-time combat model**. The client sends 
 
 ## 2. Damage Calculation
 
-All damage functions live in `server-src/src/game/battle.cpp`. Skill damage formulas are stored as formula strings in `TSkillTable` and evaluated at runtime via `libpoly::CPoly`.
+All damage functions live in `server-src/src/game/battle.cpp`. Skill damage formulas are stored as formula strings in `TSkillTable` and evaluated at runtime via `libpoly::CPoly` (see [server-src-libpoly](server-src-libpoly) for the formula evaluator architecture).
 
 ### 2.1 Physical (Melee) Damage — `CalcMeleeDamage`
 

@@ -101,7 +101,7 @@ KEY\tVALUE[\tTYPE]
 | `ARMOR_SPECULAR_ENABLE` | `1` | Armour specular shading enabled |
 | `WEAPON_SPECULAR_ENABLE` | `1` | Weapon specular shading enabled |
 | `KEEP_ACCOUNT_CONNETION_ENABLE` | `1` | Keep-alive account connection enabled |
-| `QUICKSLOT_MAX_NUM` | `36` | Total number of quick-slot slots |
+| `QUICKSLOT_MAX_NUM` | `36` | Total number of quick-slot slots (matches `QUICKSLOT_MAX_NUM = 36` in [server-src-common](server-src-common)) |
 | `TWO_HANDED_WEAPON_ATT_SPEED_DECREASE_VALUE` | `10` | Attack speed penalty for two-handed weapons |
 | `ACCESSORY_MATERIAL_LIST` | list of int | VNUMs of valid accessory refine materials |
 | `JewelAccessoryInfos` | list | Jewel→wrist/neck/ear VNUM mapping |

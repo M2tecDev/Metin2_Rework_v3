@@ -83,7 +83,7 @@ void SetName(const std::string& name);
 
 ## 3. Logging
 
-The server uses **spdlog** (`vendor/spdlog-1.15.3`) for structured logging. Use `sys_log` and `sys_err` from `libthecore` for game-process logging (they route to spdlog internally):
+The server uses **spdlog** (`vendor/spdlog-1.15.3`) for structured logging. Use `sys_log` and `sys_err` from [server-src-libthecore](server-src-libthecore) for game-process logging (they route to spdlog internally — see [server-src-libthecore](server-src-libthecore) for log rotation and `sys_log`/`sys_err` macro details):
 
 ```cpp
 sys_log(0, "CHARACTER::UseSkill vnum=%d level=%d", vnum, level);
@@ -178,7 +178,7 @@ struct TPacketGCMyNewResponse {
 
 ## 7. Server-Side: No Raw SQL in Game Process
 
-The game process must **not** execute direct SQL queries against MariaDB during gameplay. All persistence goes through the `db` process via GD packets:
+The game process must **not** execute direct SQL queries against MariaDB during gameplay. All persistence goes through the `db` process via GD packets (see [server-src-libsql](server-src-libsql) for the `CAsyncSQL` architecture that enforces this):
 
 ```
 game → GD::PLAYER_SAVE → db → MariaDB

@@ -21,7 +21,7 @@ The character system spans from the database row definition all the way to Pytho
 |------|--------------|------|
 | `player` SQL table | — | Persists all `TPlayerTable` fields per character (level, stats, gold, map position, job, hair) |
 | `player_item` SQL table | — | Persists all inventory and equipment items as `TPlayerItem` rows |
-| `mob_proto` SQL table | — | Defines all NPC/monster base stats, AI flags, aggro range, attack speed, race flags |
+| [mob_proto](topic-Item-System) SQL table | — | Defines all NPC/monster base stats, AI flags, aggro range, attack speed, race flags (see [guide-Database-Proto](guide-Database-Proto) and [Item Database](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/items.html)) |
 | `skill_proto` SQL table | — | Defines all skills: base vnum, name, job affinity, level formulae, poly expressions |
 | `server-src/src/common/tables.h` | `TPlayerTable` | Binary wire struct for player persistence: 164+ fields packed with `#pragma pack(1)` |
 | `server-src/src/common/tables.h` | `TMonsterTable` | Binary wire struct for mob/NPC proto loaded at startup |

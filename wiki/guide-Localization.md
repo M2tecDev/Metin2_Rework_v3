@@ -17,7 +17,7 @@ The Rework v3 locale system has two distinct layers:
 | **Client strings** | `client-bin/assets/locale/<lang>/` | `locale_game.txt`, `locale_interface.txt` |
 | **Server messages** | `server-src/share/locale/` | `locale_string.txt` |
 
-The Python module `localeInfo.py` is the bridge between the text files and all Python UI code. The C++ module `EterLocale` provides low-level encoding utilities (Arabic shaping, UTF-8 code-page constants).
+The Python module `localeInfo.py` is the bridge between the text files and all Python UI code. The C++ module `EterLocale` (see [client-src-EterLocale](client-src-EterLocale)) provides low-level encoding utilities (Arabic shaping via `Arabic_MakeShape`, UTF-8 code-page constant `CP_UTF8 = 65001`).
 
 ---
 

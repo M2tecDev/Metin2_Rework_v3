@@ -4,7 +4,7 @@
 
 ## Overview
 
-PythonModules is the largest Python-binding layer in the client. It consists entirely of C source files that are compiled as part of the static Python interpreter. The library contains two categories of files: the frozen Python standard library modules (the many `M_*.c` files) that make the standard library available without a filesystem, and the game-specific C extension modules registered during interpreter initialization.
+PythonModules is the largest [Python](topic-UI-Python-System) (see also [blueprint-UI-Python-System](blueprint-UI-Python-System)) binding layer in the client. It consists entirely of C source files that are compiled as part of the static Python interpreter. The library contains two categories of files: the frozen Python standard library modules (the many `M_*.c` files) that make the standard library available without a filesystem, and the game-specific C extension modules registered during interpreter initialization.
 
 The frozen modules are auto-generated from CPython source and are not manually written. The game extension modules are hand-written C++ calling into the game libraries.
 

@@ -28,7 +28,7 @@ The Metin2 economy is driven by three inter-related systems:
 | **Cube (Crafting)** | `cube.txt` flat file | `server-src/game/cube.cpp` |
 | **NPC Shops** | `shop_item` DB table + optional quest script | `server-src/game/shop.cpp` |
 
-All three systems share a common pattern: static data is loaded at server startup and referenced by item vnums.
+All three systems share a common pattern: static data is loaded at server startup and referenced by item vnums. Refine probability formulas can use `CPoly` from [server-src-libpoly](server-src-libpoly) for complex expressions.
 
 ---
 

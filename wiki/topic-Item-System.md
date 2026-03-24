@@ -649,3 +649,10 @@ The Python UI reads item data via `player.GetItemIndex(window, cell)`, `player.G
 ---
 
 *Page generated 2026-03-19. Based on Metin2 Rework v3 source at commit `77266c2`.*
+
+## See Also
+
+- [server-src-libgame](server-src-libgame) — `CGrid` inventory occupancy engine (multi-cell item placement) and `CAttribute` map walkability layer
+- [guide-Database-Proto](guide-Database-Proto) — full workflow for adding items and syncing `item_proto` and `mob_proto`
+- [Item Database](https://m2tecdev.github.io/Metin2_Rework_v3/calculators/items.html) — online item browser
+- [blueprint-Item-System](blueprint-Item-System) — full-stack architecture blueprint

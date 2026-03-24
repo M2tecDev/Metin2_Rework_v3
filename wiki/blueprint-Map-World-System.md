@@ -35,7 +35,7 @@ The world system spans from binary map attribute files on disk through the serve
 | `server-src/src/game/sectree_manager.cpp` | `SECTREE_MANAGER::ForEachEntity()`, `::ForEachAround()` | Iterates the 3 × 3 sector neighbourhood; used for view-set update and broadcast |
 | `server-src/src/game/entity.h` / `entity.cpp` | `CEntity::SetPosition()`, `::UpdateSectree()` | Base class for all world objects; updates SECTREE registration when position changes |
 | `server-src/src/game/entity_view.cpp` | `CEntity::UpdateViewSet()` | Computes symmetric difference of old and new 3 × 3 neighbourhood; sends CHARACTER_ADD/DEL to entering/leaving DESC objects |
-| `server-src/src/libgame/` | Attribute grid loader | Loads `.atr` binary files into per-SECTREE attribute byte arrays |
+| [server-src-libgame](server-src-libgame) | `CAttribute` — attribute grid loader | Loads `.atr` binary files into per-SECTREE attribute byte arrays; also provides `CGrid` for inventory placement |
 | `server-src/src/game/char_manager.cpp` | `CHARACTER_MANAGER::SpawnMob()`, `::SpawnGroup()` | Creates `CHARACTER` objects from `mob_proto` entries; registers in SECTREE |
 | `server-src/src/game/regen.cpp` | `REGEN_MANAGER::LoadRegenFile()`, regen events | Parses `regen.txt`; schedules periodic respawn events via the pulse event system |
 | `server-src/src/game/dungeon.h` / `dungeon.cpp` | `CDungeon`, `CDungeonManager` | Per-party instanced dungeon: creates copy of a template map index, manages lifecycle, destroys when party leaves |

@@ -22,9 +22,9 @@ game (channel N)  ──GD/DG TCP──┘
 
 ## Dependencies
 
-- `libthecore` — event loop, sockets, fdwatch, logging.
-- `libsql` — async MariaDB queries.
-- `libgame` — `CGrid` for item grid placement.
+- [server-src-libthecore](server-src-libthecore) — event loop, sockets, fdwatch, logging.
+- [server-src-libsql](server-src-libsql) — async MariaDB queries via `CAsyncSQL`.
+- [server-src-libgame](server-src-libgame) — `CGrid` for item grid placement.
 - `common/` — shared packet headers and table structs.
 - MariaDB Connector/C 3.4.5 (vendored).
 

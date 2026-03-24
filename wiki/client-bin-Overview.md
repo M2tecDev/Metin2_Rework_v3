@@ -56,7 +56,7 @@ python pack.py root
 python pack.py --all
 ```
 
-The script must be run from inside the `assets/` directory so that relative folder names resolve correctly. The external `PackMaker.exe` must be on the system PATH.
+The script must be run from inside the `assets/` directory so that relative folder names resolve correctly. The external `PackMaker.exe` must be on the system PATH. For `CPackManager` priority rules (later-added packs win; file mode bypasses all packs), see [client-src-PackLib](client-src-PackLib).
 
 ### Dependencies
 

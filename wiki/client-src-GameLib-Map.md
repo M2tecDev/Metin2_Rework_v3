@@ -6,7 +6,7 @@
 
 ## Overview
 
-The map sub-system is responsible for loading, streaming, and rendering the outdoor game world. It is organized in a hierarchy: `CMapManager` owns a single `CMapOutdoor` at runtime, which manages a grid of `CArea` chunks. Each area contains terrain patches (from `PRTerrainLib`), static object instances (`CGraphicThingInstance`), and effect placements. Terrain rendering uses hardware-splatting textures for multi-layer blending. The environment system drives sky color, fog, ambient light, and weather.
+The map sub-system is responsible for loading, streaming, and rendering the outdoor game world. It is organized in a hierarchy: `CMapManager` owns a single `CMapOutdoor` at runtime, which manages a grid of `CArea` chunks. Each area contains terrain patches (from [client-src-PRTerrainLib](client-src-PRTerrainLib) — the terrain rendering foundation for `CMapOutdoor`), static object instances (`CGraphicThingInstance`), and effect placements. Terrain rendering uses hardware-splatting textures for multi-layer blending. The environment system drives sky color, fog, ambient light, and weather.
 
 ## Classes
 

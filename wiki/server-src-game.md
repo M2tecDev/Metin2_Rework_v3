@@ -29,11 +29,11 @@ game ──GD/DG TCP──> db process (CDBManager / CInputDB)
 
 ## Dependencies
 
-- `libthecore` — event loop, fdwatch, sockets, ring buffer, logging.
-- `libpoly` — formula evaluation for skill damage and stat formulas.
-- `libgame` — `CGrid`, `CAttribute`.
-- `libsql` — async MariaDB (for local game-server logging queries).
-- `liblua` — embedded Lua 5.0.3 for quest scripting.
+- [server-src-libthecore](server-src-libthecore) — event loop, fdwatch, sockets, ring buffer, logging.
+- [server-src-libpoly](server-src-libpoly) — formula evaluation for skill damage and stat formulas.
+- [server-src-libgame](server-src-libgame) — `CGrid`, `CAttribute`.
+- [server-src-libsql](server-src-libsql) — async MariaDB (for local game-server logging queries).
+- [server-src-liblua](server-src-liblua) — embedded Lua 5.0.3 for quest scripting.
 - `common/` — shared packet headers and table structs.
 - MariaDB Connector/C, libsodium (key exchange).
 

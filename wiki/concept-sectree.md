@@ -162,6 +162,6 @@ NPC position coordinates in the quest and shop configuration also use server uni
 
 ## Next Steps
 
-- [NPC & Spawning](guide-NPC-and-Spawning) — using SECTREE coordinates in practice with regen.txt
+- [NPC & Spawning](guide-NPC-and-Spawning) — using SECTREE coordinates in practice with regen.txt; SECTREE partitioning also drives regen event scheduling
 - [Map & World Blueprint](blueprint-Map-World-System) — deep-dive into the SECTREE C++ implementation
 - [Your First Change](start-first-change) — a hands-on spawn example with coordinate conversion

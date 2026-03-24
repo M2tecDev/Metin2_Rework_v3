@@ -1,0 +1,55 @@
+name: Sync data files from submodules
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  sync-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy proto and desc files
+        run: |
+          mkdir -p data
+          cp server/share/conf/item_proto.txt data/item_proto.txt
+          cp server/share/conf/mob_proto.txt  data/mob_proto.txt
+          cp client-bin/assets/locale/locale/en/itemdesc.txt data/itemdesc.txt
+
+      - name: Copy item data scripts
+        run: |
+          mkdir -p data/item_scripts
+          find client-bin/assets/item -name "*.txt" | while read f; do
+            rel="${f#client-bin/assets/item/}"
+            mkdir -p "data/item_scripts/$(dirname "$rel")"
+            cp "$f" "data/item_scripts/$rel"
+          done
+
+      - name: Build icons (if script exists)
+        run: |
+          if [ -f scripts/build_icons.py ]; then
+            pip install Pillow --quiet
+            python scripts/build_icons.py
+          else
+            echo "scripts/build_icons.py not yet present — skipping icon build"
+          fi
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "No changes to data/ — skipping commit"
+          else
+            git commit -m "chore: sync data files from submodules [auto]"
+            git push origin master
+          fi

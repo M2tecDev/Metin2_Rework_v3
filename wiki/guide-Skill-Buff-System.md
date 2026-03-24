@@ -43,7 +43,7 @@ Each skill is a row in `skill_proto` (SQL) or `skill_proto.txt` (text export). K
 | `affect_type` | byte | Which `EApplyTypes` stat is affected (for buff skills) |
 | `affect_value` | string | Formula for the buff value |
 
-All formula strings (e.g. `"10 + level * 5"`) are evaluated by `libpoly::CPoly`. The variable `level` is bound to the character's current skill level at runtime.
+All formula strings (e.g. `"10 + level * 5"`) are evaluated by `libpoly::CPoly` (see [server-src-libpoly](server-src-libpoly)). The variable `level` is bound to the character's current skill level at runtime. `EApplyTypes` and `EPointTypes` are central to how affects modify stats — see [topic-Character-System](topic-Character-System) and [topic-Item-System](topic-Item-System).
 
 ### Client: skill_desc.txt and skill_table.txt
 

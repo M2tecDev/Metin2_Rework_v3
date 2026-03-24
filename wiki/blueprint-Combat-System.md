@@ -43,7 +43,7 @@ Combat is server-authoritative: the client sends intent packets, the server comp
 | `server-src/src/game/pvp.h` / `pvp.cpp` | `CPVPManager::CanAttack()` | PvP mode decisions: duel consent, revenge mode, faction |
 | `server-src/src/game/arena.h` | `CArenaManager::CanAttack()` | Arena bypass: always returns `true` for matched arena pairs |
 | `server-src/src/game/input_main.cpp` | `CInputMain::Attack()`, `::UseSkill()` | Packet handlers: deserialise CG::ATTACK / CG::USE_SKILL → call battle functions |
-| `server-src/src/libpoly/Poly.h` | `CPoly::Analyze()`, `::SetVar()`, `::Eval()` | Formula parser + stack-machine evaluator; used for all skill damage/cost formulas |
+| [server-src-libpoly](server-src-libpoly) — `Poly.h` | `CPoly::Analyze()`, `::SetVar()`, `::Eval()` | Formula parser + stack-machine evaluator; used for all skill damage/cost formulas |
 
 ### Layer 3 — Network
 

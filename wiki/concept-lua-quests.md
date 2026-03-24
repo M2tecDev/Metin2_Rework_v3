@@ -181,3 +181,5 @@ The game process reads from `game/object/` at startup. If you edit a `.quest` fi
 - [Quest System Blueprint](blueprint-Quest-System) — the complete technical reference: Lua grammar, full API (~90 functions), compiler FSM
 - [Quest System Topic Guide](topic-Quest-System) — cross-cutting explanation of how quests interact with the full stack
 - [Adding a New System](guide-Adding-a-New-System) — a complete end-to-end example that includes quest integration
+- [server-src-liblua](server-src-liblua) — Lua 5.0.3 complete source integration; the actual lexer used by `qc`
+- [server-src-qc](server-src-qc) — `qc` compiler: drives grammar FSM, extracts Lua bodies, emits `object/` output tree
